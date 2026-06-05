@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="やることリスト">
+  <title>やることリスト</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --primary: #6C63FF;
+      --secondary: #FF6584;
+      --success: #43D9A2;
+      --warning: #FFB347;
+      --danger: #FF6B6B;
+      --bg: #F0F4FF;
+      --card: #FFFFFF;
+      --text: #2D2D3A;
+      --subtext: #8888A8;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: "Hiragino Maru Gothic ProN", "Rounded Mplus 1c", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+      overscroll-behavior: none;
+    }
+
+    /* ===== ヘッダー ===== */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #9B59B6 100%);
+      color: white;
+      padding: 20px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.3);
+    }
+    header h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+    header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; }
+    .streak-badge {
+      background: rgba(255,255,255,0.25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ===== スタンプボード ===== */
+    .stamp-board {
+      background: white;
+      margin: 14px 16px;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .stamp-board-title { font-size: 13px; color: var(--subtext); font-weight: 700; margin-bottom: 8px; }
+    .stamps { display: flex; gap: 6px; flex-wrap: wrap; }
+    .stamp {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      background: var(--bg);
+      transition: transform 0.2s;
+    }
+    .stamp.earned { background: #FFF3CD; box-shadow: 0 2px 6px rgba(255,179,71,0.5); }
+    .stamp.empty { opacity: 0.3; filter: grayscale(1); }
+
+    /* ===== タブ ===== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      color: var(--subtext);
+    }
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 3px 10px rgba(108,99,255,0.4);
+    }
+
+    /* ===== タスクリスト ===== */
+    .task-list {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .task-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      transition: transform 0.15s, opacity 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .task-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
+      border-radius: 18px 0 0 18px;
+    }
+    .task-card.done { opacity: 0.55; }
+    .task-card.done .task-title { text-decoration: line-through; color: var(--subtext); }
+
+    .subject-dot {
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 16px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--subtext); }
+    .due-tag {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-weight: 600;
+    }
+    .due-tag.overdue { background: #FFE0E0; color: var(--danger); }
+    .due-tag.today { background: #FFF3CD; color: #E67E22; }
+    .due-tag.soon { background: #E8F8F0; color: #27AE60; }
+
+    .check-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 2.5px solid #DDDDEE;
+      background: transparent;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .check-btn.done {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .delete-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: #FFE0E0;
+      color: var(--danger);
+      font-size: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--subtext);
+    }
+    .empty-state .icon { font-size: 56px; margin-bottom: 12px; }
+    .empty-state p { font-size: 15px; line-height: 1.6; }
+
+    /* ===== フッターボタン ===== */
+    .fab {
+      position: fixed;
+      bottom: 30px;
+      right: 24px;
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      font-size: 28px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(108,99,255,0.45);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s;
+      z-index: 200;
+    }
+    .fab:active { transform: scale(0.92); }
+
+    /* ===== モーダル ===== */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: white;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 20px 40px;
+      width: 100%;
+      max-width: 600px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: #E0E0F0;
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .modal h2 { font-size: 18px; font-weight: 900; margin-bottom: 18px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--subtext); margin-bottom: 6px; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #E8E8F4;
+      border-radius: 14px;
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .subject-btn {
+      padding: 10px 4px;
+      border-radius: 14px;
+      border: 2px solid #E8E8F4;
+      background: var(--bg);
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--subtext);
+      transition: all 0.15s;
+    }
+    .subject-btn .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .subject-btn.selected { border-color: var(--primary); background: #EEF0FF; color: var(--primary); }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      font-size: 16px;
+      font-weight: 900;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+    }
+
+    /* ===== スタンプアニメ ===== */
+    @keyframes stampPop {
+      0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+      60% { transform: scale(1.4) rotate(8deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    .stamp-anim {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 100px;
+      z-index: 999;
+      pointer-events: none;
+      animation: stampPop 0.6s ease forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: fixed;
+      top: 0;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      z-index: 998;
+      pointer-events: none;
+      animation: confetti-fall linear forwards;
+    }
+
+    /* 科目カラー */
+    .subject-kokugo  { background: #FFE8EA; } .subject-kokugo::before  { background: #FF6B6B; }
+    .subject-sansu   { background: #E8F4FF; } .subject-sansu::before   { background: #3D9BFF; }
+    .subject-rika    { background: #E8FFF3; } .subject-rika::before    { background: #2ECC71; }
+    .subject-shakai  { background: #FFF8E8; } .subject-shakai::before  { background: #F39C12; }
+    .subject-eigo    { background: #F0EEFF; } .subject-eigo::before    { background: #9B59B6; }
+    .subject-sougou  { background: #FFE8F8; } .subject-sougou::before  { background: #E91E94; }
+    .subject-taiiku  { background: #FFF0E8; } .subject-taiiku::before  { background: #FF6722; }
+    .subject-other   { background: #F4F4F4; } .subject-other::before   { background: #888888; }
+
+    /* 進捗バー */
+    .progress-section { padding: 0 16px 4px; }
+    .progress-bar { background: #E8E8F4; border-radius: 8px; height: 10px; overflow: hidden; margin-top: 6px; }
+    .progress-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.5s ease; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--subtext); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>📚 やることリスト</h1>
+      <div class="subtitle" id="today-label"></div>
+    </div>
+    <div class="streak-badge" id="streak-badge">🔥 0日</div>
+  </div>
+</header>
+
+<div class="stamp-board">
+  <div class="stamp-board-title">⭐ スタンプコレクション（10個でごほうび！）</div>
+  <div class="stamps" id="stamp-board"></div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-label">
+    <span id="progress-text">今日の進ちょく</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-filter="all">すべて</div>
+  <div class="tab" data-filter="kokugo">📖 国語</div>
+  <div class="tab" data-filter="sansu">🔢 算数</div>
+  <div class="tab" data-filter="rika">🔬 理科</div>
+  <div class="tab" data-filter="shakai">🌍 社会</div>
+  <div class="tab" data-filter="eigo">🗣️ 英語</div>
+  <div class="tab" data-filter="sougou">🎨 総合</div>
+  <div class="tab" data-filter="taiiku">⚽ 体育</div>
+  <div class="tab" data-filter="other">📌 その他</div>
+</div>
+
+<div class="task-list" id="task-list"></div>
+
+<button class="fab" id="add-btn">＋</button>
+
+<!-- 追加モーダル -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>✏️ タスクを追加</h2>
+    <div class="form-group">
+      <label>タスクの内容</label>
+      <input type="text" id="task-input" placeholder="例：算数のドリル10ページ" maxlength="50">
+    </div>
+    <div class="form-group">
+      <label>科目・カテゴリ</label>
+      <div class="subject-grid" id="subject-grid"></div>
+    </div>
+    <div class="form-group">
+      <label>しめ切り日</label>
+      <input type="date" id="due-input">
+    </div>
+    <button class="btn-submit" id="submit-btn">追加する 🚀</button>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = [
+  { id: 'kokugo', name: '国語', icon: '📖' },
+  { id: 'sansu',  name: '算数', icon: '🔢' },
+  { id: 'rika',   name: '理科', icon: '🔬' },
+  { id: 'shakai', name: '社会', icon: '🌍' },
+  { id: 'eigo',   name: '英語', icon: '🗣️' },
+  { id: 'sougou', name: '総合', icon: '🎨' },
+  { id: 'taiiku', name: '体育', icon: '⚽' },
+  { id: 'other',  name: 'その他', icon: '📌' },
+];
+
+const STAMPS = ['⭐','🌟','🎉','🏆','🎊','🦁','🌈','🍀','💎','🔥'];
+const REWARD_STAMPS = ['🎁','🍕','🎮','🍦','🌺'];
+
+let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+let stamps = parseInt(localStorage.getItem('stamps') || '0');
+let streak = parseInt(localStorage.getItem('streak') || '0');
+let lastDate = localStorage.getItem('lastDate') || '';
+let currentFilter = 'all';
+
+function save() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  localStorage.setItem('stamps', stamps);
+  localStorage.setItem('streak', streak);
+  localStorage.setItem('lastDate', lastDate);
+}
+
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function dueDiff(due) {
+  if (!due) return null;
+  const d = new Date(due + 'T00:00:00');
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.round((d - t) / 86400000);
+}
+
+function dueLabel(due) {
+  const diff = dueDiff(due);
+  if (diff === null) return { text: '', cls: '' };
+  if (diff < 0) return { text: `${-diff}日すぎた`, cls: 'overdue' };
+  if (diff === 0) return { text: '今日！', cls: 'today' };
+  if (diff === 1) return { text: 'あした', cls: 'soon' };
+  return { text: `あと${diff}日`, cls: '' };
+}
+
+function subjectInfo(id) {
+  return SUBJECTS.find(s => s.id === id) || SUBJECTS[7];
+}
+
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  const filtered = currentFilter === 'all' ? tasks : tasks.filter(t => t.subject === currentFilter);
+
+  // 未完了を上に、完了を下に
+  const sorted = [...filtered].sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.due && b.due) return a.due.localeCompare(b.due);
+    if (a.due) return -1; if (b.due) return 1;
+    return b.id - a.id;
+  });
+
+  if (sorted.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🎉</div><p>タスクがないよ！<br>追加ボタンから<br>やることを登録しよう</p></div>`;
+    return;
+  }
+
+  list.innerHTML = sorted.map(task => {
+    const sub = subjectInfo(task.subject);
+    const dl = dueLabel(task.due);
+    return `
+      <div class="task-card subject-${task.subject} ${task.done ? 'done' : ''}" data-id="${task.id}">
+        <div class="subject-dot" style="background:${subjectBg(task.subject)}">${sub.icon}</div>
+        <div class="task-body">
+          <div class="task-title">${escHtml(task.title)}</div>
+          <div class="task-meta">
+            <span>${sub.name}</span>
+            ${dl.text ? `<span class="due-tag ${dl.cls}">${dl.text}</span>` : ''}
+          </div>
+        </div>
+        <button class="check-btn ${task.done ? 'done' : ''}" onclick="toggleTask(${task.id})">${task.done ? '✓' : ''}</button>
+        <button class="delete-btn" onclick="deleteTask(${task.id})">🗑</button>
+      </div>
+    `;
+  }).join('');
+
+  updateProgress();
+}
+
+function subjectBg(id) {
+  const map = {
+    kokugo:'#FFE8EA', sansu:'#E8F4FF', rika:'#E8FFF3',
+    shakai:'#FFF8E8', eigo:'#F0EEFF', sougou:'#FFE8F8',
+    taiiku:'#FFF0E8', other:'#F4F4F4'
+  };
+  return map[id] || '#F4F4F4';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  task.done = !task.done;
+  if (task.done) {
+    stamps++;
+    updateStreak();
+    showStampAnim();
+    launchConfetti();
+    if (stamps % 10 === 0) setTimeout(() => showRewardAnim(), 700);
+  } else {
+    stamps = Math.max(0, stamps - 1);
+  }
+  save();
+  renderTasks();
+  renderStampBoard();
+  renderStreak();
+}
+
+function deleteTask(id) {
+  if (!confirm('このタスクを消してもいい？')) return;
+  tasks = tasks.filter(t => t.id !== id);
+  save();
+  renderTasks();
+}
+
+function updateStreak() {
+  const t = today();
+  if (lastDate === t) return;
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().slice(0,10);
+  if (lastDate === yStr) streak++;
+  else if (lastDate !== t) streak = 1;
+  lastDate = t;
+  save();
+}
+
+function renderStreak() {
+  document.getElementById('streak-badge').textContent = `🔥 ${streak}日連続`;
+}
+
+function renderStampBoard() {
+  const board = document.getElementById('stamp-board');
+  const total = Math.min(stamps, 50);
+  const cells = 10;
+  const completed = total % 10;
+  const sets = Math.floor(total / 10);
+  let html = '';
+  for (let i = 0; i < cells; i++) {
+    const earned = i < completed;
+    const idx = (sets * 10 + i) % STAMPS.length;
+    html += `<div class="stamp ${earned ? 'earned' : 'empty'}">${STAMPS[idx]}</div>`;
+  }
+  // 残りの枠
+  for (let i = cells; i < 10; i++) {
+    html += `<div class="stamp empty">⭐</div>`;
+  }
+  board.innerHTML = html;
+  // スタンプ数表示
+  board.parentElement.querySelector('.stamp-board-title').textContent =
+    `⭐ スタンプ ${completed}/10 （${Math.floor(stamps/10)}回ごほうびゲット！）`;
+}
+
+function updateProgress() {
+  const todayTasks = tasks.filter(t => !t.due || t.due === today());
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length;
+  const pct = total === 0 ? 0 : Math.round(done / total * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-text').textContent = `進ちょく ${done}/${total}件`;
+}
+
+function showStampAnim() {
+  const el = document.createElement('div');
+  el.className = 'stamp-anim';
+  el.textContent = STAMPS[stamps % STAMPS.length];
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+function showRewardAnim() {
+  const el = document.createElement('div');
+  el.className = 'stamp-anim';
+  el.style.fontSize = '120px';
+  el.textContent = REWARD_STAMPS[Math.floor(Math.random() * REWARD_STAMPS.length)];
+  document.body.appendChild(el);
+  // メッセージ
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,80px);z-index:999;font-size:18px;font-weight:900;color:#6C63FF;text-align:center;pointer-events:none;';
+  msg.textContent = '🎊 10こたまった！すごい！';
+  document.body.appendChild(msg);
+  setTimeout(() => { el.remove(); msg.remove(); }, 2500);
+}
+
+function launchConfetti() {
+  const colors = ['#6C63FF','#FF6584','#43D9A2','#FFB347','#3D9BFF'];
+  for (let i = 0; i < 25; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (0.8 + Math.random() * 1.2) + 's';
+    el.style.animationDelay = Math.random() * 0.4 + 's';
+    el.style.width = el.style.height = (6 + Math.random() * 8) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+}
+
+// タブ
+document.getElementById('tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  currentFilter = tab.dataset.filter;
+  renderTasks();
+});
+
+// 科目グリッド
+const subjectGrid = document.getElementById('subject-grid');
+let selectedSubject = 'other';
+subjectGrid.innerHTML = SUBJECTS.map(s =>
+  `<div class="subject-btn ${s.id === selectedSubject ? 'selected' : ''}" data-id="${s.id}">
+    <span class="icon">${s.icon}</span>${s.name}
+  </div>`
+).join('');
+subjectGrid.addEventListener('click', e => {
+  const btn = e.target.closest('.subject-btn');
+  if (!btn) return;
+  selectedSubject = btn.dataset.id;
+  subjectGrid.querySelectorAll('.subject-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+});
+
+// モーダル開閉
+document.getElementById('add-btn').addEventListener('click', () => {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('task-input').focus();
+  document.getElementById('due-input').value = today();
+});
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal'))
+    document.getElementById('modal').classList.remove('open');
+});
+
+// 追加
+document.getElementById('submit-btn').addEventListener('click', () => {
+  const title = document.getElementById('task-input').value.trim();
+  if (!title) { document.getElementById('task-input').focus(); return; }
+  const due = document.getElementById('due-input').value;
+  tasks.push({ id: Date.now(), title, subject: selectedSubject, due, done: false });
+  save();
+  renderTasks();
+  document.getElementById('task-input').value = '';
+  document.getElementById('modal').classList.remove('open');
+});
+
+// Enterキー
+document.getElementById('task-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('submit-btn').click();
+});
+
+// 今日の日付
+const nowDate = new Date();
+const weekDays = ['日','月','火','水','木','金','土'];
+document.getElementById('today-label').textContent =
+  `${nowDate.getMonth()+1}月${nowDate.getDate()}日（${weekDays[nowDate.getDay()]}）`;
+
+// 初期レンダリング
+renderTasks();
+renderStampBoard();
+renderStreak();
+</script>
+</body>
+</html>
