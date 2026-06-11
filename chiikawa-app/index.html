@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="がんばりノート">
+  <title>がんばりノート</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #F5A0B5;
+      --pink-light: #FFD6E0;
+      --pink-pale: #FFF8F8;
+      --mint: #C5EDD9;
+      --mint-dark: #6BB899;
+      --yellow: #FFF3C4;
+      --yellow-dark: #F7D070;
+      --blue: #D8EDFF;
+      --purple: #E8D5F8;
+      --lavender: #F0EAFF;
+      --cream: #FFFCF5;
+      --text: #4A3040;
+      --text-light: #9A7080;
+      --white: #FFFFFF;
+      --border: #FFE4EC;
+      --shadow: rgba(200,140,160,0.15);
+      --bg: #FFFBF5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(255,220,230,.35) 0%, transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(255,243,200,.3) 0%, transparent 25%),
+        radial-gradient(circle at 80% 85%, rgba(225,210,255,.3) 0%, transparent 30%),
+        radial-gradient(circle at 20% 80%, rgba(200,240,220,.25) 0%, transparent 25%);
+    }
+
+    /* ===== ヘッダー ===== */
+    header {
+      background: linear-gradient(135deg, #FFCAD4 0%, #FFA3B5 40%, #FF85A1 100%);
+      padding: 14px 16px 10px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 3px 12px rgba(255,143,163,.3);
+    }
+    .header-row { display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 20px; color: white; text-shadow: 1px 1px 0 rgba(0,0,0,.1); font-weight: 900; }
+    header h1 span { font-size: 22px; }
+    .name-area { display: flex; align-items: center; gap: 6px; }
+    .player-name {
+      font-size: 13px; color: white; background: rgba(255,255,255,.3);
+      padding: 3px 10px; border-radius: 20px; cursor: pointer;
+      border: 2px solid rgba(255,255,255,.5);
+    }
+    .player-name.placeholder { opacity: 0.7; }
+    .name-edit-btn {
+      background: white; color: var(--pink); border: none;
+      border-radius: 50%; width: 26px; height: 26px; font-size: 12px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* XPバー */
+    .xp-section {
+      background: rgba(255,255,255,.3); margin-top: 8px;
+      border-radius: 12px; padding: 6px 10px;
+    }
+    .xp-row { display: flex; justify-content: space-between; font-size: 11px; color: white; margin-bottom: 4px; }
+    .xp-bar { height: 10px; background: rgba(255,255,255,.3); border-radius: 8px; overflow: hidden; }
+    .xp-fill { height: 100%; background: white; border-radius: 8px; transition: width .5s; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+
+    /* ===== 今月のめあて ===== */
+    .goal-section {
+      margin: 12px 16px 0;
+      background: var(--cream);
+      border-radius: 20px;
+      padding: 12px 14px;
+      box-shadow: 0 2px 10px rgba(200,140,160,.1);
+      border: 1.5px solid var(--pink-light);
+    }
+    .goal-title { font-size: 12px; color: var(--text-light); font-weight: 700; margin-bottom: 6px; }
+    .goal-title span { font-size: 14px; }
+    .goal-input {
+      width: 100%; border: none; outline: none; font-size: 15px;
+      font-family: inherit; color: var(--text); background: transparent;
+      font-weight: 700;
+    }
+    .goal-input::placeholder { color: var(--pink-light); font-weight: 400; }
+    .goal-progress {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 8px; font-size: 11px; color: var(--text-light);
+    }
+    .goal-progress-bar { flex: 1; height: 6px; background: var(--pink-pale); border-radius: 4px; overflow: hidden; }
+    .goal-progress-fill { height: 100%; background: linear-gradient(90deg, var(--pink), #FF6B9D); border-radius: 4px; transition: width .5s; }
+
+    /* ===== 連続ログイン & ボーナス ===== */
+    .info-row {
+      display: flex; gap: 8px; margin: 10px 16px 0;
+    }
+    .streak-card, .bonus-card {
+      flex: 1; background: var(--cream); border-radius: 20px;
+      padding: 8px 12px; box-shadow: 0 2px 8px var(--shadow);
+      border: 1.5px solid var(--pink-light);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .bonus-card { cursor: pointer; transition: transform .1s; }
+    .bonus-card:active { transform: scale(.96); }
+    .bonus-card.claimed { opacity: .6; cursor: default; }
+    .info-icon { font-size: 20px; }
+    .info-text { flex: 1; }
+    .info-num { font-size: 18px; font-weight: 900; color: var(--pink); line-height: 1; }
+    .info-label { font-size: 10px; color: var(--text-light); }
+
+    /* ===== 今日の一言 ===== */
+    .daily-msg {
+      margin: 8px 16px 0;
+      background: var(--yellow);
+      border-radius: 16px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.6;
+      border: 2px solid var(--yellow-dark);
+    }
+    .daily-msg::before { content: '💬 '; }
+
+    /* ===== カウントダウン ===== */
+    .cd-section { margin: 8px 16px 0; }
+    .cd-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--text-light); font-weight: 700; margin-bottom: 5px;
+    }
+    .cd-add-btn {
+      background: var(--yellow); color: var(--text); border: 1.5px solid var(--yellow-dark);
+      border-radius: 12px; padding: 3px 10px; font-size: 10px; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+    }
+    .cd-list { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .cd-list::-webkit-scrollbar { display: none; }
+    .cd-card {
+      flex-shrink: 0; width: 104px; background: var(--cream);
+      border: 2px solid var(--pink-light); border-radius: 16px;
+      padding: 8px; text-align: center; position: relative;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+    .cd-card.urgent { border-color: #FF9AA2; background: #FFF0F2; }
+    .cd-card.soon { border-color: var(--yellow-dark); background: #FFFCF0; }
+    .cd-card.past { opacity: .4; }
+    .cd-icon-big { font-size: 24px; margin-bottom: 2px; }
+    .cd-days { font-size: 22px; font-weight: 900; color: var(--pink); line-height: 1; }
+    .cd-days.urgent { color: #FF6B7E; }
+    .cd-days.soon { color: #E0A800; }
+    .cd-unit { font-size: 9px; color: var(--text-light); margin-bottom: 2px; }
+    .cd-name { font-size: 10px; color: var(--text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cd-del { position: absolute; top: 2px; right: 4px; background: none; border: none; color: #DDB; font-size: 10px; cursor: pointer; padding: 0; }
+    .cd-preset-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+    .cd-preset-btn {
+      padding: 7px 3px; border-radius: 12px; border: 2px solid var(--pink-light);
+      background: var(--pink-pale); cursor: pointer; text-align: center;
+      font-size: 10px; color: var(--text-light); font-family: inherit;
+    }
+    .cd-preset-btn .pi { font-size: 16px; display: block; margin-bottom: 2px; }
+
+    /* ===== ホットバー（シールボード） ===== */
+    .seal-section { margin: 10px 16px 0; }
+    .seal-title { font-size: 11px; color: var(--text-light); text-align: center; margin-bottom: 4px; }
+    .seal-board {
+      background: white; border-radius: 16px; padding: 8px;
+      display: flex; gap: 3px; justify-content: center;
+      box-shadow: 0 2px 8px var(--shadow); border: 2px solid var(--pink-light);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .seal-board::-webkit-scrollbar { display: none; }
+    .seal-slot {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; background: rgba(255,220,230,.3); flex-shrink: 0;
+      position: relative; transition: transform .2s;
+    }
+    .seal-slot.filled { background: rgba(255,190,210,.5); animation: sealPop .3s ease; }
+    .seal-slot.empty { opacity: .35; }
+    .seal-slot.rare-slot { background: #F3E6FF; animation: rarePulse 2s infinite; }
+    @keyframes sealPop { 0%{transform:scale(0.5)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+    @keyframes rarePulse { 0%,100%{box-shadow:0 0 4px #C89EF0} 50%{box-shadow:0 0 12px #C89EF0} }
+
+    /* ===== おしごと種別タブ ===== */
+    .type-bar {
+      display: flex; gap: 6px; margin: 10px 16px 0;
+    }
+    .type-btn {
+      flex: 1; padding: 8px 4px; text-align: center;
+      border-radius: 20px; font-size: 12px; font-weight: 700;
+      border: 1.5px solid var(--pink-light);
+      background: var(--cream); color: var(--text-light);
+      cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .type-btn.active {
+      background: linear-gradient(135deg, var(--pink-light), var(--pink)); color: white; border-color: var(--pink);
+      box-shadow: 0 3px 10px rgba(200,140,160,.3);
+    }
+
+    /* カテゴリタブ */
+    .cat-tabs {
+      display: flex; gap: 4px; padding: 6px 16px 0;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0; padding: 5px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      background: white; color: var(--text-light);
+      border: 2px solid var(--pink-light);
+      white-space: nowrap; font-family: inherit;
+    }
+    .cat-tab.active {
+      background: linear-gradient(135deg, var(--pink-light), var(--pink));
+      color: white; border-color: var(--pink);
+    }
+
+    /* ===== おしごとカード ===== */
+    .task-list { padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+    .task-card {
+      background: white; border-radius: 20px;
+      padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 2px 14px rgba(200,140,160,.12);
+      border: 1.5px solid rgba(245,200,210,.4);
+      transition: opacity .3s, transform .1s;
+      position: relative; overflow: hidden;
+    }
+    .task-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 5px; border-radius: 18px 0 0 18px;
+    }
+    .task-card.done { opacity: .5; }
+    .task-card.done .task-title { text-decoration: line-through; color: var(--text-light); }
+
+    /* カテゴリ色 */
+    .cat-study::before  { background: #6BB8FF; }
+    .cat-sports::before { background: #6BFF9E; }
+    .cat-hobby::before  { background: #FF9F6B; }
+    .cat-help::before   { background: #FFD700; }
+    .cat-friend::before { background: #FF6BB8; }
+    .cat-challenge::before { background: #C86BFF; }
+    .cat-other::before  { background: #C0C0C0; }
+
+    .task-badge-daily {
+      position: absolute; top: 4px; right: 46px;
+      font-size: 9px; background: var(--mint); color: var(--mint-dark);
+      border-radius: 8px; padding: 1px 6px; font-weight: 700;
+    }
+    .task-badge-weekly {
+      position: absolute; top: 4px; right: 46px;
+      font-size: 9px; background: var(--blue); color: #5BA0CC;
+      border-radius: 8px; padding: 1px 6px; font-weight: 700;
+    }
+
+    .cat-icon {
+      width: 40px; height: 40px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; background: rgba(255,220,230,.3); flex-shrink: 0;
+    }
+    .task-body { flex: 1; min-width: 0; }
+    .task-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+    .cat-label { font-size: 10px; color: var(--text-light); background: var(--pink-pale); padding: 2px 6px; border-radius: 8px; }
+    .xp-badge-task { font-size: 10px; color: var(--pink); background: #FFF0F5; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+    .due-badge {
+      font-size: 10px; padding: 1px 7px; border-radius: 8px; font-weight: 700;
+      border: 1.5px solid;
+    }
+    .due-badge.overdue { background: #FFE0E0; border-color: #FF6B6B; color: #FF4040; }
+    .due-badge.today   { background: #FFF3CD; border-color: #FFAA00; color: #CC8800; }
+    .due-badge.soon    { background: #E8FFF0; border-color: #6BCC8E; color: #2E9E4F; }
+    .due-badge.normal  { background: var(--pink-pale); border-color: var(--pink-light); color: var(--text-light); }
+
+    .check-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2.5px solid var(--pink-light); background: white;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .check-btn.done {
+      background: linear-gradient(135deg, var(--pink-light), var(--pink));
+      border-color: var(--pink); color: white;
+    }
+    .del-btn {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #FFE0E0; border: none; color: #FF8FA3;
+      font-size: 12px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+    .empty-state .icon { font-size: 52px; margin-bottom: 10px; }
+    .empty-state p { font-size: 13px; line-height: 2; }
+
+    /* ===== FAB ===== */
+    .fab {
+      position: fixed; bottom: 28px; right: 20px;
+      width: 62px; height: 62px; border-radius: 50%;
+      background: linear-gradient(135deg, #F5A0B5, #E87090);
+      color: white; font-size: 28px; border: none; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255,107,157,.45);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s;
+    }
+    .fab:active { transform: scale(.92); }
+
+    /* ===== モーダル共通 ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 500; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: white; border-radius: 28px 28px 0 0;
+      padding: 20px 20px 40px; width: 100%; max-width: 600px;
+      transform: translateY(100%); transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-handle { width: 40px; height: 4px; background: var(--pink-light); border-radius: 2px; margin: 0 auto 16px; }
+    .modal h2 { font-size: 16px; font-weight: 900; color: var(--pink); margin-bottom: 16px; text-align: center; }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 11px; color: var(--text-light); font-weight: 700; margin-bottom: 5px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 10px 14px; border: 2px solid var(--pink-light);
+      border-radius: 14px; font-size: 15px; font-family: inherit;
+      color: var(--text); background: var(--pink-pale); outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--pink); background: white; }
+
+    /* おしごと種別 */
+    .type-select-modal { display: flex; gap: 5px; }
+    .type-opt-modal {
+      flex: 1; padding: 9px 4px; text-align: center;
+      border-radius: 14px; font-size: 11px; font-weight: 700;
+      border: 2px solid var(--pink-light); background: var(--pink-pale);
+      color: var(--text-light); cursor: pointer; font-family: inherit;
+      transition: all .15s;
+    }
+    .type-opt-modal .ti { font-size: 18px; display: block; margin-bottom: 2px; }
+    .type-opt-modal.selected { background: var(--pink); color: white; border-color: var(--pink); }
+
+    /* XP選択 */
+    .xp-select-modal { display: flex; gap: 4px; flex-wrap: wrap; }
+    .xp-opt-modal {
+      flex: 1; min-width: 54px; padding: 7px 4px;
+      border-radius: 12px; border: 2px solid var(--pink-light);
+      background: var(--pink-pale); text-align: center;
+      font-size: 10px; color: var(--text-light); cursor: pointer;
+      font-family: inherit; line-height: 1.5;
+    }
+    .xp-opt-modal .xs { font-size: 13px; display: block; }
+    .xp-opt-modal .xv { font-size: 12px; font-weight: 700; display: block; }
+    .xp-opt-modal.selected { background: var(--yellow); border-color: var(--yellow-dark); color: var(--text); }
+
+    /* カテゴリグリッド */
+    .cat-grid-modal { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+    .cat-btn-modal {
+      padding: 8px 3px; border-radius: 12px;
+      border: 2px solid var(--pink-light); background: var(--pink-pale);
+      cursor: pointer; text-align: center; font-size: 10px;
+      color: var(--text-light); font-family: inherit;
+    }
+    .cat-btn-modal .ci { font-size: 18px; display: block; margin-bottom: 2px; }
+    .cat-btn-modal.selected { background: var(--pink-light); border-color: var(--pink); color: var(--text); }
+
+    /* 曜日選択 */
+    .weekday-modal { display: flex; gap: 4px; }
+    .wd-btn-modal {
+      flex: 1; padding: 8px 2px; border-radius: 12px;
+      border: 2px solid var(--pink-light); background: var(--pink-pale);
+      text-align: center; font-size: 13px; color: var(--text-light);
+      cursor: pointer; font-family: inherit;
+    }
+    .wd-btn-modal.selected { background: var(--pink); color: white; border-color: var(--pink); }
+
+    .btn-submit-modal {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, var(--pink), #E87090);
+      color: white; font-size: 15px; font-weight: 900; font-family: inherit;
+      border: none; border-radius: 18px; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255,107,157,.4); margin-top: 8px; letter-spacing: .5px;
+    }
+
+    /* ===== 名前モーダル ===== */
+    .name-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 600; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .name-modal.open { opacity: 1; pointer-events: all; }
+    .name-modal-box {
+      background: white; border-radius: 24px;
+      padding: 24px 20px; width: 88%; max-width: 360px; text-align: center;
+      box-shadow: 0 10px 40px rgba(255,143,163,.3);
+    }
+    .name-modal-box h3 { color: var(--pink); font-size: 17px; margin-bottom: 16px; }
+    .chiikawa-deco { font-size: 40px; margin-bottom: 8px; }
+
+    /* ===== おみくじスプラッシュ ===== */
+    .splash {
+      position: fixed; inset: 0;
+      background: linear-gradient(160deg, #FFF5E8 0%, #FFEEF5 40%, #F5EEFF 70%, #EEF8FF 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 900; transition: opacity .5s;
+    }
+    .splash.hide { opacity: 0; pointer-events: none; }
+    .splash-deco { font-size: 60px; margin-bottom: 12px; animation: float 2s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .splash-title { font-size: 14px; color: var(--text-light); margin-bottom: 12px; letter-spacing: 1px; }
+    .omikuji-box {
+      background: white; border-radius: 24px;
+      padding: 20px 24px; text-align: center; width: 88%; max-width: 340px;
+      box-shadow: 0 8px 30px var(--shadow); border: 3px solid var(--pink-light);
+    }
+    .omikuji-result { font-size: 32px; font-weight: 900; color: var(--pink); margin-bottom: 6px; }
+    .omikuji-msg { font-size: 13px; line-height: 1.8; color: var(--text); margin-bottom: 12px; }
+    .omikuji-bonus {
+      font-size: 12px; color: var(--mint-dark); background: #EAFFF5;
+      border: 2px solid var(--mint); border-radius: 12px; padding: 6px 14px;
+      margin-bottom: 14px; display: inline-block;
+    }
+    .splash-btn {
+      background: linear-gradient(135deg, var(--pink), #E87090);
+      color: white; border: none; border-radius: 20px;
+      padding: 12px 32px; font-size: 14px; font-weight: 900;
+      font-family: inherit; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255,107,157,.4); letter-spacing: .5px;
+    }
+
+    /* ===== バッグ・ショップモーダル ===== */
+    .full-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 600; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .full-modal.open { opacity: 1; pointer-events: all; }
+    .full-panel {
+      background: var(--bg); border-radius: 28px 28px 0 0;
+      padding: 16px 16px 40px; width: 100%; max-width: 600px;
+      transform: translateY(100%); transition: transform .3s ease;
+      max-height: 88vh; overflow-y: auto;
+    }
+    .full-modal.open .full-panel { transform: translateY(0); }
+    .full-title {
+      font-size: 16px; font-weight: 900; color: var(--pink); text-align: center;
+      background: white; padding: 10px; border-radius: 16px;
+      margin-bottom: 12px; box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    /* インベントリ */
+    .inv-stats { display: flex; gap: 8px; margin-bottom: 10px; }
+    .inv-stat {
+      flex: 1; background: white; border-radius: 14px;
+      padding: 8px; text-align: center; box-shadow: 0 2px 6px var(--shadow);
+      border: 2px solid var(--pink-light);
+    }
+    .inv-stat-num { font-size: 20px; font-weight: 900; color: var(--pink); }
+    .inv-stat-label { font-size: 10px; color: var(--text-light); }
+    .inv-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 12px; }
+    .inv-slot {
+      background: white; border-radius: 14px; border: 2px solid var(--pink-light);
+      padding: 8px 4px; text-align: center; cursor: pointer;
+      position: relative; transition: border-color .15s;
+    }
+    .inv-slot:hover, .inv-slot.selected { border-color: var(--pink); background: var(--pink-pale); }
+    .inv-slot.rare-slot { border-color: #C89EF0; background: #F8EEFF; }
+    .inv-slot.ultra-slot { border-color: #FFBB00; background: #FFFBE6; animation: goldPulse 2s infinite; }
+    @keyframes goldPulse { 0%,100%{box-shadow:0 0 4px #FFBB00} 50%{box-shadow:0 0 10px #FFBB00} }
+    .inv-slot-icon { font-size: 24px; margin-bottom: 3px; }
+    .inv-slot-name { font-size: 9px; color: var(--text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .inv-slot-count { position: absolute; bottom: 2px; right: 4px; font-size: 10px; color: var(--pink); font-weight: 700; }
+    .inv-slot-new { position: absolute; top: 2px; left: 2px; font-size: 8px; background: var(--pink); color: white; border-radius: 4px; padding: 0 3px; }
+    .inv-slot-tier { position: absolute; top: 2px; right: 2px; font-size: 7px; padding: 0 3px; border-radius: 4px; }
+    .inv-slot-tier.rare { background: #EEE0FF; color: #9966CC; }
+    .inv-slot-tier.ultra { background: #FFF3CC; color: #CC9900; }
+    .inv-detail {
+      background: white; border-radius: 16px; border: 2px solid var(--pink-light);
+      padding: 14px; min-height: 80px; display: flex; gap: 12px; align-items: center;
+      margin-bottom: 10px;
+    }
+    .inv-detail-icon { font-size: 40px; }
+    .inv-detail-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .inv-detail-tier { font-size: 11px; padding: 2px 8px; border-radius: 8px; display: inline-block; margin: 3px 0; }
+    .inv-detail-count { font-size: 12px; color: var(--text-light); }
+    .inv-detail-date { font-size: 10px; color: #CCC; margin-top: 2px; }
+
+    /* ショップ */
+    .shop-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+    .shop-tab {
+      flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 700;
+      background: white; color: var(--text-light); border: 2px solid var(--pink-light);
+      border-radius: 14px; cursor: pointer; font-family: inherit;
+    }
+    .shop-tab.active { background: var(--pink); color: white; border-color: var(--pink); }
+    .reward-card {
+      background: white; border-radius: 16px; border: 2px solid var(--pink-light);
+      padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px; box-shadow: 0 2px 6px var(--shadow);
+    }
+    .reward-icon-big { font-size: 28px; }
+    .reward-body { flex: 1; min-width: 0; }
+    .reward-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .reward-cost { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .exchange-btn {
+      background: linear-gradient(135deg, var(--pink-light), var(--pink));
+      color: white; border: none; border-radius: 12px;
+      padding: 6px 10px; font-size: 11px; font-weight: 700;
+      font-family: inherit; cursor: pointer; flex-shrink: 0;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+    .exchange-btn:disabled { background: #EEE; color: #AAA; box-shadow: none; cursor: default; }
+    .del-reward-btn {
+      background: #FFE0E0; color: #FF8FA3; border: none; border-radius: 10px;
+      padding: 4px 8px; font-size: 11px; cursor: pointer;
+    }
+    .history-item {
+      background: white; border-radius: 14px; border: 2px solid var(--pink-light);
+      padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+      margin-bottom: 6px; font-size: 12px;
+    }
+    .h-status { font-size: 10px; padding: 2px 6px; border-radius: 8px; border: 1.5px solid; }
+    .h-status.pending { color: #CC8800; border-color: #FFAA00; background: #FFFDE7; }
+    .h-status.done { color: var(--mint-dark); border-color: var(--mint); background: #EAFFF5; }
+    .add-reward-form { background: white; border-radius: 16px; padding: 14px; margin-bottom: 10px; border: 2px solid var(--pink-light); }
+    .small-label { font-size: 10px; color: var(--text-light); margin-bottom: 4px; font-weight: 700; }
+    .form-row { display: flex; gap: 6px; margin-bottom: 8px; }
+    .add-reward-form input {
+      flex: 1; padding: 8px 10px; border: 2px solid var(--pink-light);
+      border-radius: 10px; font-size: 13px; font-family: inherit; color: var(--text);
+      background: var(--pink-pale); outline: none;
+    }
+    .add-reward-form input:focus { border-color: var(--pink); background: white; }
+    .add-reward-form input[type=number] { width: 70px; flex: none; }
+
+    /* ドロップ演出 */
+    .drop-popup {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%); z-index: 800;
+      text-align: center; pointer-events: none;
+    }
+    .drop-inner {
+      background: white; border-radius: 24px; padding: 16px 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.15);
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+      border: 3px solid var(--pink-light);
+    }
+    @keyframes popIn { 0%{transform:scale(0) rotate(-10deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .drop-label { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+    .drop-icon { font-size: 48px; }
+    .drop-name { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 4px; }
+
+    /* エフェクト */
+    @keyframes floatUp { 0%{transform:translateY(0) scale(.5);opacity:0} 50%{transform:translateY(-20px) scale(1.2);opacity:1} 100%{transform:translateY(-50px) scale(1);opacity:0} }
+    .effect-float { position: fixed; z-index: 999; pointer-events: none; font-size: 22px; font-weight: 900; color: var(--pink); animation: floatUp 1.2s ease forwards; white-space: nowrap; text-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    @keyframes xpFloat { 0%{transform:translateY(0);opacity:1} 100%{transform:translateY(-50px);opacity:0} }
+    .xp-float-el { position: fixed; z-index: 998; pointer-events: none; font-size: 14px; font-weight: 700; color: var(--mint-dark); animation: xpFloat 1s ease forwards; }
+    @keyframes heartBurst { 0%{transform:scale(0);opacity:0} 40%{transform:scale(1.3);opacity:1} 100%{transform:scale(0.8);opacity:0} }
+    .heart-el { position: fixed; z-index: 997; pointer-events: none; font-size: 20px; animation: heartBurst .6s ease forwards; }
+
+    /* ハートボタン（バッグ/ショップ） */
+    .action-bar {
+      display: flex; gap: 6px; margin: 8px 16px 0;
+      justify-content: flex-end;
+    }
+    .action-btn {
+      background: white; border: 2px solid var(--pink-light);
+      border-radius: 14px; padding: 5px 12px; font-size: 11px;
+      font-weight: 700; color: var(--text-light); cursor: pointer;
+      font-family: inherit; display: flex; align-items: center; gap: 4px;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+<!-- おみくじスプラッシュ -->
+<div class="splash" id="splash">
+  <div style="font-size:20px;letter-spacing:8px;margin-bottom:4px;opacity:.6">✨ ✨ ✨</div>
+<div class="splash-deco" id="splash-deco">🌸</div>
+  <div class="splash-title">今日のおみくじ ✨</div>
+  <div class="omikuji-box">
+    <div class="omikuji-result" id="omikuji-result"></div>
+    <div class="omikuji-msg" id="omikuji-msg"></div>
+    <div class="omikuji-bonus" id="omikuji-bonus"></div>
+    <button class="splash-btn" id="splash-close">💕 がんばるよ！</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-row">
+    <h1><span>🌸</span> がんばりノート</h1>
+    <div class="name-area">
+      <div class="player-name" id="player-name-display" onclick="openNameModal()">なまえを入力</div>
+      <button class="name-edit-btn" onclick="openNameModal()">✏️</button>
+    </div>
+  </div>
+  <div class="xp-section">
+    <div class="xp-row">
+      <span id="xp-level">Lv.1 ちいかわのたまご</span>
+      <span id="xp-badge">⭐ 0ポイント</span>
+    </div>
+    <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<!-- 今月のめあて -->
+<div class="goal-section">
+  <div class="goal-title"><span>🎯</span> 今月のめあて（<span id="goal-month"></span>）</div>
+  <input type="text" class="goal-input" id="goal-input" placeholder="めあてを入力してね！" maxlength="40">
+  <div class="goal-progress">
+    <span id="goal-progress-txt">0/0 できた</span>
+    <div class="goal-progress-bar"><div class="goal-progress-fill" id="goal-progress-fill" style="width:0%"></div></div>
+    <span id="goal-pct">0%</span>
+  </div>
+</div>
+
+<!-- 連続 & ボーナス -->
+<div class="info-row">
+  <div class="streak-card">
+    <div class="info-icon" id="streak-icon">🔥</div>
+    <div class="info-text">
+      <div class="info-num" id="streak-num">0</div>
+      <div class="info-label">日れんぞく</div>
+    </div>
+  </div>
+  <div class="bonus-card" id="bonus-card" onclick="claimBonus()">
+    <div class="info-icon">🎁</div>
+    <div class="info-text">
+      <div class="info-num" id="bonus-text" style="font-size:13px">ボーナス！</div>
+      <div class="info-label" id="bonus-sub">タップして受け取る</div>
+    </div>
+  </div>
+</div>
+
+<!-- 今日の一言 -->
+<div class="daily-msg" id="daily-msg"></div>
+
+<!-- カウントダウン -->
+<div class="cd-section">
+  <div class="cd-header">
+    <span>📅 カウントダウン</span>
+    <button class="cd-add-btn" onclick="openCdModal()">＋ 追加</button>
+  </div>
+  <div class="cd-list" id="cd-list"></div>
+</div>
+
+<!-- カウントダウン追加モーダル -->
+<div class="name-modal" id="cd-modal">
+  <div class="name-modal-box" style="text-align:left;">
+    <h3 style="text-align:center;">📅 カウントダウンを追加</h3>
+    <div class="cd-preset-grid" id="cd-preset-grid"></div>
+    <div style="text-align:center;font-size:11px;color:var(--text-light);margin:8px 0;">── または自分で入力 ──</div>
+    <div class="form-group"><label>📝 イベントの名前</label><input type="text" id="cd-name-input" placeholder="例：ピアノの発表会" maxlength="16"></div>
+    <div class="form-group"><label>🎀 アイコン</label><div id="cd-icon-picker" style="display:flex;gap:5px;flex-wrap:wrap;"></div></div>
+    <div class="form-group"><label>📅 日付</label><input type="date" id="cd-date-input"></div>
+    <button class="btn-submit-modal" id="cd-submit-btn">💕 追加する！</button>
+  </div>
+</div>
+
+<!-- シールボード -->
+<div class="seal-section">
+  <div class="seal-title">🏅 シールコレクション（<span id="seal-count">0</span>/10）　<span id="rare-label" style="color:#9966CC;font-size:10px"></span></div>
+  <div class="seal-board" id="seal-board"></div>
+</div>
+
+<!-- バッグ・ショップボタン -->
+<div class="action-bar">
+  <button class="action-btn" onclick="openBag()">🎒 バッグ</button>
+  <button class="action-btn" onclick="openShop()">🛒 ショップ</button>
+</div>
+
+<!-- おしごと種別タブ -->
+<div class="type-bar">
+  <button class="type-btn active" data-type="once">⚔ 1回おしごと</button>
+  <button class="type-btn" data-type="daily">🔄 毎日</button>
+  <button class="type-btn" data-type="weekly">📅 毎週</button>
+</div>
+
+<!-- カテゴリタブ -->
+<div class="cat-tabs" id="cat-tabs">
+  <button class="cat-tab active" data-filter="all">すべて</button>
+  <button class="cat-tab" data-filter="study">📚 べんきょう</button>
+  <button class="cat-tab" data-filter="sports">🏃 スポーツ</button>
+  <button class="cat-tab" data-filter="hobby">🎨 しゅみ</button>
+  <button class="cat-tab" data-filter="help">🏠 おてつだい</button>
+  <button class="cat-tab" data-filter="friend">🎵 習い事</button>
+  <button class="cat-tab" data-filter="challenge">🌟 チャレンジ</button>
+  <button class="cat-tab" data-filter="other">📌 その他</button>
+</div>
+
+<div class="task-list" id="task-list"></div>
+<button class="fab" id="add-btn">＋</button>
+
+<!-- おしごと追加モーダル -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>✨ おしごとを追加</h2>
+    <div class="form-group"><label>📝 おしごとの内容</label><input type="text" id="task-input" placeholder="例：算数ドリル10ページ" maxlength="50"></div>
+    <div class="form-group">
+      <label>🔄 しゅるい</label>
+      <div class="type-select-modal">
+        <button class="type-opt-modal selected" data-qtype="once"><span class="ti">⚔</span>1回</button>
+        <button class="type-opt-modal" data-qtype="daily"><span class="ti">🔄</span>毎日</button>
+        <button class="type-opt-modal" data-qtype="weekly"><span class="ti">📅</span>毎週</button>
+      </div>
+    </div>
+    <div class="form-group" id="weekday-group" style="display:none">
+      <label>📅 リセットする曜日</label>
+      <div class="weekday-modal" id="weekday-select-modal"></div>
+    </div>
+    <div class="form-group"><label>🎨 カテゴリ</label><div class="cat-grid-modal" id="cat-grid-modal"></div></div>
+    <div class="form-group"><label>⭐ むずかしさ</label><div class="xp-select-modal" id="xp-select-modal"></div></div>
+    <div class="form-group" id="due-group"><label>📅 しめきり日</label><input type="date" id="due-input"></div>
+    <button class="btn-submit-modal" id="submit-btn">💕 追加する！</button>
+  </div>
+</div>
+
+<!-- 名前モーダル -->
+<div class="name-modal" id="name-modal">
+  <div class="name-modal-box">
+    <div class="chiikawa-deco">🐭💕</div>
+    <h3>なまえを教えてね！</h3>
+    <div class="form-group">
+      <input type="text" id="name-input" placeholder="なまえを入れてね" maxlength="16" style="text-align:center;font-size:18px;">
+    </div>
+    <button class="btn-submit-modal" id="name-save-btn">💕 決定！</button>
+  </div>
+</div>
+
+<!-- バッグモーダル -->
+<div class="full-modal" id="bag-modal">
+  <div class="full-panel">
+    <div class="full-title">🎒 アイテムバッグ</div>
+    <div class="inv-stats">
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-normal-num" style="color:var(--text)">0</div>
+        <div class="inv-stat-label">ノーマル</div>
+      </div>
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-rare-num" style="color:#9966CC">0</div>
+        <div class="inv-stat-label">レア</div>
+      </div>
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-ultra-num" style="color:#CC9900">0</div>
+        <div class="inv-stat-label">スーパーレア</div>
+      </div>
+    </div>
+    <div class="inv-grid" id="inv-grid"></div>
+    <div class="inv-detail" id="inv-detail">
+      <div style="color:var(--text-light);font-size:12px;width:100%;text-align:center;">アイテムをタップすると<br>くわしく見られるよ 🌸</div>
+    </div>
+  </div>
+</div>
+
+<!-- ショップモーダル -->
+<div class="full-modal" id="shop-modal">
+  <div class="full-panel">
+    <div class="full-title">🛒 ごほうびショップ</div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" onclick="switchShopTab('list',this)">🎁 ごほうび</button>
+      <button class="shop-tab" onclick="switchShopTab('history',this)">📜 こうかん履歴</button>
+      <button class="shop-tab" onclick="switchShopTab('setting',this)">⚙ 設定</button>
+    </div>
+    <div id="stab-list">
+      <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">アイテムをためてごほうびと交換しよう！💕</div>
+      <div id="reward-list"></div>
+      <div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:6px;">
+        ノーマル <span id="s-normal" style="font-weight:700">0</span>
+        <span style="color:#9966CC">レア</span> <span id="s-rare" style="font-weight:700;color:#9966CC">0</span>
+        <span style="color:#CC9900">スーパーレア</span> <span id="s-ultra" style="font-weight:700;color:#CC9900">0</span>
+      </div>
+    </div>
+    <div id="stab-history" style="display:none"><div id="history-list"></div></div>
+    <div id="stab-setting" style="display:none">
+      <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;">おうちの人がごほうびを登録してね 🌸</div>
+      <div class="add-reward-form">
+        <div class="small-label">ごほうびの名前</div>
+        <div class="form-row"><input type="text" id="rwd-name" placeholder="例：アイスを買ってもらう" maxlength="20"></div>
+        <div class="small-label">アイコン</div>
+        <div id="rwd-icon-picker" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;"></div>
+        <div class="form-row" style="gap:8px;">
+          <div style="flex:1;text-align:center;"><div class="small-label">ノーマル</div><input type="number" id="rwd-n" min="0" value="0"></div>
+          <div style="flex:1;text-align:center;"><div class="small-label" style="color:#9966CC">レア</div><input type="number" id="rwd-r" min="0" value="1" style="border-color:#C89EF0"></div>
+          <div style="flex:1;text-align:center;"><div class="small-label" style="color:#CC9900">スーパーレア</div><input type="number" id="rwd-u" min="0" value="0" style="border-color:#FFD700"></div>
+        </div>
+        <button class="btn-submit-modal" id="rwd-add-btn">💕 追加する</button>
+      </div>
+      <div id="reward-list-edit"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== データ定義 =====
+const CATS=[
+  {id:'study',  name:'べんきょう',icon:'📚'},
+  {id:'sports', name:'スポーツ',  icon:'🏃'},
+  {id:'hobby',  name:'しゅみ',    icon:'🎨'},
+  {id:'help',   name:'おてつだい',icon:'🏠'},
+  {id:'friend', name:'習い事',    icon:'🎵'},
+  {id:'challenge',name:'チャレンジ',icon:'🌟'},
+  {id:'other',  name:'その他',    icon:'📌'},
+];
+
+const DAYS=['日','月','火','水','木','金','土'];
+const MAX_XP=36500, MAX_LV=99;
+
+function getLvName(lv){
+  if(lv>=99)return'⭐ まほうのちいかわ';
+  if(lv>=95)return'うちゅうちいかわ';
+  if(lv>=90)return'まおうちいかわ';
+  if(lv>=85)return'ちょうでんせつ';
+  if(lv>=80)return'ほしのちいかわ';
+  if(lv>=75)return'プリンセスちいかわ';
+  if(lv>=70)return'にんじゃちいかわ';
+  if(lv>=65)return'きらきらちいかわ';
+  if(lv>=60)return'でんせつのちいかわ';
+  if(lv>=55)return'スーパーちいかわ';
+  if(lv>=50)return'にじいろちいかわ';
+  if(lv>=45)return'おひめさまちいかわ';
+  if(lv>=40)return'まほうのちいかわ';
+  if(lv>=35)return'はなのちいかわ';
+  if(lv>=30)return'キラキラちいかわ';
+  if(lv>=25)return'にこにこちいかわ';
+  if(lv>=20)return'かわいいちいかわ';
+  if(lv>=15)return'げんきなちいかわ';
+  if(lv>=10)return'そだちざかり';
+  if(lv>=5) return'ちいさなちいかわ';
+  return'ちいかわのたまご';
+}
+function xpForLv(lv){if(lv<=1)return 0;if(lv>=MAX_LV)return MAX_XP;return Math.floor(MAX_XP*Math.pow((lv-1)/(MAX_LV-1),1.3));}
+function getLvInfo(v){if(v>=MAX_XP)return{lv:MAX_LV,name:getLvName(MAX_LV),pct:100};const lv=Math.max(1,Math.min(MAX_LV-1,Math.floor((MAX_LV-1)*Math.pow(v/MAX_XP,1/1.3))+1));return{lv,name:getLvName(lv),pct:Math.max(0,Math.min(100,Math.round((v-xpForLv(lv))/(xpForLv(lv+1)-xpForLv(lv))*100)))};}
+
+// アイテム
+const NORMAL_ITEMS=[{i:'🍙',n:'おにぎり'},{i:'🌸',n:'さくら'},{i:'🍵',n:'おちゃ'},{i:'🌿',n:'くさもち'},{i:'🍡',n:'おだんご'}];
+const RARE_ITEMS=[{i:'🦋',n:'ちょうちょのはね'},{i:'🌈',n:'にじいろストーン'},{i:'💎',n:'きらきらダイヤ'},{i:'🍀',n:'よつばのクローバー'},{i:'🎀',n:'リボンのブローチ'},{i:'🌙',n:'みかづきのかけら'},{i:'🪄',n:'まほうのステッキ'}];
+const ULTRA_ITEMS=[{i:'⭐',n:'ねがいごとのほし'},{i:'🌟',n:'まほうのほし'},{i:'🌺',n:'でんせつのはな'},{i:'🦄',n:'ユニコーンのかけら'},{i:'🎠',n:'まほうのメリーゴーランド'},{i:'🌌',n:'そらのかけら'},{i:'💫',n:'キラキラポーション'}];
+
+// おみくじ
+const OMIKUJI=[
+  {r:'🎊 だいきち！',b:50,msg:'きょうはなにをやっても\nうまくいく日！\nどんどんがんばろう！',d:'🌸'},
+  {r:'✨ ちゅうきち',b:30,msg:'コツコツがんばれば\nきっとできるよ！\n一つずつすすもう！',d:'🌺'},
+  {r:'🌟 しょうきち',b:20,msg:'ちいさなことを\n大切にしよう。\n積み重ねが力になるよ！',d:'💐'},
+  {r:'🍀 きち',b:15,msg:'なかまと一緒だと\nもっと楽しくなるよ！\n笑顔でいこう！',d:'🌻'},
+  {r:'☁ すえきち',b:10,msg:'ゆっくりでも大丈夫。\n無理しないで\n一歩ずつすすもう。',d:'🌷'},
+];
+
+const DAILY_MSGS=[
+  'ちいかわも毎日コツコツがんばってるよ！いっしょにがんばろう！',
+  '小さな一歩でも、続けることが大切だよ。えらい！',
+  '今日もかわいく・げんきにすごせるといいね🌸',
+  '失敗しても大丈夫！また挑戦すればいいんだから！',
+  'がんばったあとのご褒美が待ってるよ。楽しみにしてね💕',
+  'きのうより少しだけ成長してるよ。すごいね！',
+  '休むことも大切なんだよ。自分にやさしくしてね🌸',
+  'ちいかわみたいにかわいくがんばろう！',
+  '夢は諦めないで！ちょっとずつすすんでいこう！',
+  '今日のがんばりが、将来の自分への贈り物だよ💕',
+  'まわりの人に「ありがとう」を伝えてみよう🌸',
+  'できることから少しずつ。それで十分だよ！',
+];
+
+const SEAL_ITEMS=['🌸','💕','⭐','🌟','🎀','🦋','🍀','💎','🌈','🌺'];
+const ULTRA_SEAL='✨';
+const RWD_ICONS=['🎁','🍦','🎮','🎬','🛍️','🎠','🌟','🎪','🍕','🎧','💝','🧸'];
+
+// ===== ストレージ =====
+let tasks    =JSON.parse(localStorage.getItem('cw_tasks')||'[]');
+let xp       =parseInt(localStorage.getItem('cw_xp')||'0');
+let playerName=localStorage.getItem('cw_name')||'';
+let streak   =parseInt(localStorage.getItem('cw_streak')||'0');
+let drops    =JSON.parse(localStorage.getItem('cw_drops')||'[]');
+let rewards  =JSON.parse(localStorage.getItem('cw_rewards')||'[]');
+let shopHistory=JSON.parse(localStorage.getItem('cw_shophistory')||'[]');
+let goalText =localStorage.getItem('cw_goal')||'';
+let currentType='once', currentFilter='all';
+
+function save(){
+  localStorage.setItem('cw_tasks',JSON.stringify(tasks));
+  localStorage.setItem('cw_xp',xp);
+  localStorage.setItem('cw_name',playerName);
+  localStorage.setItem('cw_streak',streak);
+  localStorage.setItem('cw_drops',JSON.stringify(drops));
+  localStorage.setItem('cw_rewards',JSON.stringify(rewards));
+  localStorage.setItem('cw_shophistory',JSON.stringify(shopHistory));
+  localStorage.setItem('cw_goal',goalText);
+}
+function today(){return new Date().toISOString().slice(0,10);}
+
+// 毎日リセット
+function dailyInit(){
+  const last=localStorage.getItem('cw_last_open')||'';
+  const t=today();
+  if(last!==t){
+    const y=new Date();y.setDate(y.getDate()-1);
+    if(last===y.toISOString().slice(0,10))streak++;
+    else streak=1;
+    localStorage.setItem('cw_last_open',t);
+    save();
+  }
+  const lr=localStorage.getItem('cw_last_reset')||'';
+  if(lr!==t){
+    tasks.forEach(k=>{if(k.qtype==='daily')k.done=false;});
+    localStorage.setItem('cw_last_reset',t);
+    save();
+  }
+  const wr=JSON.parse(localStorage.getItem('cw_weekly')||'{}');
+  const wd=new Date().getDay();
+  if(wr[wd]!==t){
+    tasks.forEach(k=>{if(k.qtype==='weekly'&&k.weekday===wd)k.done=false;});
+    wr[wd]=t;
+    localStorage.setItem('cw_weekly',JSON.stringify(wr));
+    save();
+  }
+}
+
+// おみくじ
+function showOmikuji(){
+  const lo=localStorage.getItem('cw_omikuji')||'';
+  const t=today();
+  const seed=parseInt(t.replace(/-/g,''))%OMIKUJI.length;
+  const o=OMIKUJI[seed];
+  document.getElementById('omikuji-result').textContent=o.r;
+  document.getElementById('omikuji-msg').textContent=o.msg;
+  document.getElementById('splash-deco').textContent=o.d;
+  if(lo!==t){document.getElementById('omikuji-bonus').textContent=`⭐ ポイント +${o.b} ゲット！`;}
+  else{document.getElementById('omikuji-bonus').textContent='（きょうはもう引いたよ）';document.getElementById('omikuji-bonus').style.background='#F5F5F5';document.getElementById('omikuji-bonus').style.borderColor='#DDD';}
+  document.getElementById('splash').style.display='flex';
+}
+document.getElementById('splash-close').addEventListener('click',()=>{
+  const lo=localStorage.getItem('cw_omikuji')||'';const t=today();
+  if(lo!==t){const seed=parseInt(t.replace(/-/g,''))%OMIKUJI.length;xp+=OMIKUJI[seed].b;localStorage.setItem('cw_omikuji',t);save();updateXpBar();}
+  document.getElementById('splash').classList.add('hide');
+  setTimeout(()=>document.getElementById('splash').style.display='none',500);
+});
+
+// ログインボーナス
+function renderBonus(){
+  const claimed=localStorage.getItem('cw_bonus')===today();
+  const card=document.getElementById('bonus-card');
+  const xpB=streak>=7?50:streak>=3?30:20;
+  card.classList.toggle('claimed',claimed);
+  document.getElementById('bonus-text').textContent=claimed?'受け取り済み ✓':`+${xpB}ポイント！`;
+  document.getElementById('bonus-sub').textContent=claimed?'また明日ね💕':streak>=3?`🔥${streak}日れんぞく！`:'タップして受け取る';
+}
+function claimBonus(){
+  if(localStorage.getItem('cw_bonus')===today())return;
+  const xpB=streak>=7?50:streak>=3?30:20;
+  xp+=xpB;localStorage.setItem('cw_bonus',today());save();
+  renderBonus();updateXpBar();renderSeals();
+  showEffect(`🎁 +${xpB}ポイント！`);
+}
+
+// 今月のめあて
+function initGoal(){
+  const m=new Date();
+  document.getElementById('goal-month').textContent=`${m.getMonth()+1}月`;
+  const goalKey=`cw_goal_${m.getFullYear()}_${m.getMonth()+1}`;
+  goalText=localStorage.getItem(goalKey)||'';
+  document.getElementById('goal-input').value=goalText;
+  document.getElementById('goal-input').addEventListener('input',e=>{
+    goalText=e.target.value;localStorage.setItem(goalKey,goalText);
+  });
+  updateGoalProgress();
+}
+function updateGoalProgress(){
+  const total=tasks.length;
+  const done=tasks.filter(t=>t.done).length;
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('goal-progress-txt').textContent=`${done}/${total} できた`;
+  document.getElementById('goal-progress-fill').style.width=pct+'%';
+  document.getElementById('goal-pct').textContent=pct+'%';
+}
+
+// XPバー
+function updateXpBar(){
+  const info=getLvInfo(xp);
+  document.getElementById('xp-level').textContent=`Lv.${info.lv} ${info.name}`;
+  document.getElementById('xp-badge').textContent=`⭐ ${xp}ポイント`;
+  document.getElementById('xp-fill').style.width=info.pct+'%';
+  if(playerName)document.getElementById('player-name-display').textContent='💕 '+playerName;
+}
+
+// ストリーク
+function renderStreak(){
+  document.getElementById('streak-num').textContent=streak;
+  document.getElementById('streak-icon').textContent=streak>=30?'🔥🔥🔥':streak>=7?'🔥🔥':'🔥';
+}
+
+// 今日の一言
+function renderDailyMsg(){
+  const seed=parseInt(today().replace(/-/g,''))%DAILY_MSGS.length;
+  document.getElementById('daily-msg').textContent=DAILY_MSGS[seed];
+}
+
+// シール
+function dropCount(tier){return drops.filter(d=>d.tier===tier&&!d._used).length;}
+function dropCountAll(){return{n:dropCount('normal'),r:dropCount('rare'),u:dropCount('ultra'),xpN:Math.min(Math.floor(xp/50),10)};}
+function renderSeals(){
+  const f=Math.min(Math.floor(xp/50),10);
+  document.getElementById('seal-count').textContent=f;
+  const rc=dropCount('rare'),uc=dropCount('ultra');
+  document.getElementById('rare-label').textContent=rc>0||uc>0?`レア×${rc} ✨×${uc}`:'';
+  document.getElementById('seal-board').innerHTML=Array.from({length:10},(_,i)=>`<div class="seal-slot ${i<f?'filled':'empty'}">${i<f?SEAL_ITEMS[i%SEAL_ITEMS.length]:'🌸'}</div>`).join('');
+}
+
+// ドロップ
+function dropRate(b,xpV){return Math.min(b*Math.min(xpV/30,3),b*3);}
+function tryDrop(xpV){
+  const r=Math.random();
+  if(r<dropRate(.05,xpV)){addDrop(ULTRA_ITEMS,'ultra');}
+  else if(r<dropRate(.05,xpV)+dropRate(.15,xpV)){addDrop(RARE_ITEMS,'rare');}
+  else if(r<dropRate(.05,xpV)+dropRate(.15,xpV)+dropRate(.5,xpV)){addDrop(NORMAL_ITEMS,'normal');}
+}
+function addDrop(list,tier){
+  const item=list[Math.floor(Math.random()*list.length)];
+  drops.push({icon:item.i,name:item.n,tier,date:today(),isNew:true});
+  save();showDropPopup({icon:item.i,name:item.n,tier});renderSeals();
+}
+function showDropPopup(item){
+  const cfg={normal:{label:'ドロップ！',color:'var(--text-light)'},rare:{label:'💜 レアドロップ！',color:'#9966CC'},ultra:{label:'⭐ スーパーレア！！',color:'#CC9900'}};
+  const c=cfg[item.tier]||cfg.normal;
+  const el=document.createElement('div');el.className='drop-popup';
+  el.innerHTML=`<div class="drop-inner" style="border-color:${item.tier==='ultra'?'#FFD700':item.tier==='rare'?'#C89EF0':'var(--pink-light)'}"><div class="drop-label" style="color:${c.color}">${c.label}</div><div class="drop-icon">${item.icon}</div><div class="drop-name">${item.name}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),item.tier==='ultra'?3500:2500);
+}
+
+// タスク
+function catInfo(id){return CATS.find(c=>c.id===id)||CATS[6];}
+function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function dueDiff(d){if(!d)return null;const dt=new Date(d+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);return Math.round((dt-n)/86400000);}
+function dueLabel(d){const diff=dueDiff(d);if(diff===null)return null;if(diff<0)return{t:(-diff)+'日すぎた',c:'overdue'};if(diff===0)return{t:'⚠ きょうまで！',c:'today'};if(diff<=3)return{t:`あと${diff}日`,c:'soon'};return{t:`📅 あと${diff}日`,c:'normal'};}
+
+function renderTasks(){
+  const list=document.getElementById('task-list');
+  let filtered=tasks.filter(t=>(t.qtype||'once')===currentType);
+  if(currentFilter!=='all')filtered=filtered.filter(t=>t.cat===currentFilter);
+  const sorted=[...filtered].sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;if(a.due&&b.due)return a.due.localeCompare(b.due);if(a.due)return -1;if(b.due)return 1;return b.id-a.id;});
+  if(sorted.length===0){
+    const msgs={daily:'毎日おしごとがないよ！<br>＋から追加しよう🌸',weekly:'毎週おしごとがないよ！<br>＋から追加しよう🌸'};
+    list.innerHTML=`<div class="empty-state"><div class="icon">🌸</div><p>${msgs[currentType]||'おしごとがないよ！<br>＋から追加しよう🌸'}</p></div>`;
+    return;
+  }
+  list.innerHTML=sorted.map(task=>{
+    const cat=catInfo(task.cat);const dl=dueLabel(task.due);
+    const isD=task.qtype==='daily',isW=task.qtype==='weekly';
+    const wdN=isW&&task.weekday!=null?DAYS[task.weekday]+'曜':'';
+    return`<div class="task-card cat-${task.cat} ${task.done?'done':''}">
+      ${isD?'<div class="task-badge-daily">🔄 毎日</div>':isW?`<div class="task-badge-weekly">📅 毎週${wdN}</div>`:''}
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="task-body">
+        <div class="task-title">${escH(task.title)}</div>
+        <div class="task-meta">
+          <span class="cat-label">${cat.name}</span>
+          <span class="xp-badge-task">+${task.xp||20}pt</span>
+          ${dl?`<span class="due-badge ${dl.c}">${dl.t}</span>`:''}
+        </div>
+      </div>
+      <button class="check-btn ${task.done?'done':''}" onclick="toggleTask(${task.id})">${task.done?'💕':''}</button>
+      <button class="del-btn" onclick="deleteTask(${task.id})">✕</button>
+    </div>`;
+  }).join('');
+  updateGoalProgress();
+}
+
+function toggleTask(id){
+  const task=tasks.find(t=>t.id===id);if(!task)return;
+  task.done=!task.done;
+  if(task.done){
+    const g=task.xp||20;xp+=g;
+    showXpFloat(g);showHearts();
+    const info=getLvInfo(xp),prev=getLvInfo(xp-g);
+    if(info.lv>prev.lv)showEffect(`⬆ レベルアップ！Lv.${info.lv}🌸`);
+    else showEffect('💕 できた！');
+    tryDrop(task.xp||20);
+  }else{xp=Math.max(0,xp-(task.xp||20));}
+  save();renderTasks();updateXpBar();renderSeals();
+}
+function deleteTask(id){if(!confirm('このおしごとを消す？'))return;tasks=tasks.filter(t=>t.id!==id);save();renderTasks();}
+
+function showEffect(t){const el=document.createElement('div');el.className='effect-float';el.textContent=t;el.style.left=(30+Math.random()*40)+'%';el.style.top='50%';document.body.appendChild(el);setTimeout(()=>el.remove(),1300);}
+function showXpFloat(a){const el=document.createElement('div');el.className='xp-float-el';el.textContent=`+${a}pt`;el.style.left=(40+Math.random()*30)+'%';el.style.top='55%';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
+function showHearts(){['💕','🌸','⭐','💫'].forEach((h,i)=>{const el=document.createElement('div');el.className='heart-el';el.textContent=h;el.style.left=(20+Math.random()*60)+'%';el.style.top=(30+Math.random()*40)+'%';el.style.animationDelay=(i*.1)+'s';document.body.appendChild(el);setTimeout(()=>el.remove(),800);});}
+
+// バッグ
+function openBag(){renderBag();document.getElementById('bag-modal').classList.add('open');}
+document.getElementById('bag-modal').addEventListener('click',e=>{if(e.target===document.getElementById('bag-modal'))document.getElementById('bag-modal').classList.remove('open');});
+function renderBag(){
+  const c=dropCountAll();
+  document.getElementById('inv-normal-num').textContent=c.xpN+c.n;
+  document.getElementById('inv-rare-num').textContent=c.r;
+  document.getElementById('inv-ultra-num').textContent=c.u;
+  // XPアイテム
+  const XP_ITEMS=[{i:'🍙',n:'おにぎり'},{i:'🌸',n:'さくら'},{i:'🍡',n:'おだんご'},{i:'🍵',n:'おちゃ'},{i:'🌿',n:'くさもち'},{i:'🌺',n:'はなびら'},{i:'💕',n:'こころ'},{i:'🎀',n:'リボン'},{i:'🍀',n:'クローバー'},{i:'✨',n:'キラキラ'}];
+  const xpSlots=XP_ITEMS.slice(0,c.xpN).map((it,i)=>({icon:it.i,name:it.n,tier:'xp',count:1,dates:[],isNew:false}));
+  // ドロップ集計
+  const summary={};
+  drops.forEach(d=>{const k=d.tier+'_'+d.name;if(!summary[k])summary[k]={icon:d.icon,name:d.name,tier:d.tier,count:0,dates:[],isNew:false,_used:0};summary[k].count++;if(d._used)summary[k]._used++;if(d.date)summary[k].dates.push(d.date);if(d.isNew)summary[k].isNew=true;});
+  const dropList=Object.values(summary).sort((a,b)=>({normal:0,rare:1,ultra:2}[b.tier]||0)-({normal:0,rare:1,ultra:2}[a.tier]||0));
+  window._bagItems=[...xpSlots,...dropList];
+  if(window._bagItems.length===0){document.getElementById('inv-grid').innerHTML='<div style="grid-column:span 4;text-align:center;padding:20px;color:var(--text-light);font-size:12px;">まだアイテムがないよ！<br>おしごとをしてゲットしよう🌸</div>';return;}
+  const slotCls={xp:'',normal:'',rare:'rare-slot',ultra:'ultra-slot'};
+  const tierBadge={xp:'',normal:'',rare:'<div class="inv-slot-tier rare">レア</div>',ultra:'<div class="inv-slot-tier ultra">スーパーレア</div>'};
+  document.getElementById('inv-grid').innerHTML=window._bagItems.map((item,i)=>`<div class="inv-slot ${slotCls[item.tier]||''}" onclick="showBagDetail(${i})">${item.isNew?'<div class="inv-slot-new">NEW</div>':''}${tierBadge[item.tier]||''}<div class="inv-slot-icon">${item.icon}</div><div class="inv-slot-name">${item.name}</div>${item.count>1?`<div class="inv-slot-count">×${item.count}</div>`:''}</div>`).join('');
+  document.getElementById('inv-detail').innerHTML='<div style="color:var(--text-light);font-size:12px;width:100%;text-align:center;">アイテムをタップすると<br>くわしく見られるよ 🌸</div>';
+}
+function showBagDetail(i){
+  const item=window._bagItems[i];if(!item)return;
+  drops.forEach(d=>{if(d.name===item.name&&d.tier===item.tier)d.isNew=false;});save();
+  document.querySelectorAll('.inv-slot').forEach((el,idx)=>el.classList.toggle('selected',idx===i));
+  const tc={xp:{label:'ノーマル',color:'var(--text-light)'},normal:{label:'ノーマル',color:'var(--text-light)'},rare:{label:'💜 レア',color:'#9966CC'},ultra:{label:'⭐ スーパーレア',color:'#CC9900'}}[item.tier]||{label:'',color:''};
+  const dateH=item.dates&&item.dates.length>0?`<div class="inv-detail-date">はじめて入手: ${item.dates[0]}</div>`:'<div class="inv-detail-date">シールで獲得</div>';
+  document.getElementById('inv-detail').innerHTML=`<div class="inv-detail-icon">${item.icon}</div><div><div class="inv-detail-name">${item.name}</div><div class="inv-detail-tier" style="color:${tc.color};background:${tc.color==='var(--text-light)'?'var(--pink-pale)':tc.color==='#9966CC'?'#F3E6FF':'#FFFBE6'}">${tc.label}</div><div class="inv-detail-count">もってる: ${item.count}こ</div>${dateH}</div>`;
+}
+
+// ショップ
+function openShop(){renderShopView();document.getElementById('shop-modal').classList.add('open');}
+document.getElementById('shop-modal').addEventListener('click',e=>{if(e.target===document.getElementById('shop-modal'))document.getElementById('shop-modal').classList.remove('open');});
+let curShopTab='list';
+function switchShopTab(tab,el){curShopTab=tab;['list','history','setting'].forEach(t=>document.getElementById('stab-'+t).style.display=t===tab?'':'none');document.querySelectorAll('.shop-tab').forEach(b=>b.classList.remove('active'));el?.classList.add('active');renderShopView();}
+function renderShopView(){const c=dropCountAll();document.getElementById('s-normal').textContent=c.xpN+c.n;document.getElementById('s-rare').textContent=c.r;document.getElementById('s-ultra').textContent=c.u;if(curShopTab==='list')renderRewardList();else if(curShopTab==='history')renderShopHistory();else renderEditRewards();}
+function renderRewardList(){
+  const el=document.getElementById('reward-list');const c=dropCountAll();
+  if(rewards.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px;">ごほうびがまだないよ<br>「設定」から追加してね🌸</div>';return;}
+  el.innerHTML=rewards.map((r,i)=>{
+    const ok=(c.xpN+c.n)>=(r.n||0)&&c.r>=(r.r||0)&&c.u>=(r.u||0);
+    const cost=[r.n>0?`ノーマル×${r.n}`:'',r.r>0?`<span style="color:#9966CC">レア×${r.r}</span>`:'',r.u>0?`<span style="color:#CC9900">スーパーレア×${r.u}</span>`:''].filter(Boolean).join(' + ')||'無料';
+    return`<div class="reward-card"><div class="reward-icon-big">${r.icon}</div><div class="reward-body"><div class="reward-name">${escH(r.name)}</div><div class="reward-cost">必要: ${cost}</div></div><button class="exchange-btn" onclick="exchange(${i})" ${ok?'':'disabled'}>${ok?'交換する':'アイテム不足'}</button></div>`;
+  }).join('');
+}
+function exchange(i){
+  const r=rewards[i];const c=dropCountAll();
+  if((c.xpN+c.n)<(r.n||0)||c.r<(r.r||0)||c.u<(r.u||0))return;
+  if(!confirm(`「${r.name}」と交換する？\nノーマル×${r.n||0} レア×${r.r||0} スーパーレア×${r.u||0}\nが減るよ`))return;
+  let ul=r.u||0,rl=r.r||0,nl=r.n||0;
+  for(let j=drops.length-1;j>=0&&ul>0;j--)if(drops[j].tier==='ultra'&&!drops[j]._used){drops[j]._used=true;ul--;}
+  for(let j=drops.length-1;j>=0&&rl>0;j--)if(drops[j].tier==='rare'&&!drops[j]._used){drops[j]._used=true;rl--;}
+  for(let j=drops.length-1;j>=0&&nl>0;j--)if(drops[j].tier==='normal'&&!drops[j]._used){drops[j]._used=true;nl--;}
+  xp=Math.max(0,xp-nl*50);
+  shopHistory.unshift({icon:r.icon,name:r.name,date:today(),n:r.n||0,r:r.r||0,u:r.u||0,status:'pending'});
+  save();renderShopView();renderSeals();updateXpBar();showEffect('🎁 こうかんした！');
+}
+function renderShopHistory(){
+  const el=document.getElementById('history-list');
+  if(shopHistory.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px;">まだ交換履歴がないよ</div>';return;}
+  el.innerHTML=shopHistory.map((h,i)=>`<div class="history-item"><span style="font-size:20px">${h.icon}</span><div style="flex:1"><div style="font-weight:700">${escH(h.name)}</div><div style="font-size:10px;color:var(--text-light)">${h.date}　ノーマル×${h.n||0} レア×${h.r||0}</div></div><span class="h-status ${h.status}">${h.status==='done'?'✓ もらった':'⏳ まってる'}</span>${h.status==='pending'?`<button onclick="markDone(${i})" style="background:var(--mint);color:white;border:none;border-radius:10px;padding:3px 8px;font-size:10px;cursor:pointer;margin-left:4px;font-family:inherit">渡した</button>`:''}</div>`).join('');
+}
+function markDone(i){shopHistory[i].status='done';save();renderShopHistory();}
+let rwdIcon='🎁';
+function renderEditRewards(){
+  renderRwdIconPicker();
+  const el=document.getElementById('reward-list-edit');
+  if(rewards.length===0){el.innerHTML='';return;}
+  el.innerHTML='<div style="font-size:11px;color:var(--text-light);margin-bottom:6px;">登録済みのごほうび</div>'+
+  rewards.map((r,i)=>`<div class="reward-card"><div class="reward-icon-big">${r.icon}</div><div class="reward-body"><div class="reward-name">${escH(r.name)}</div><div class="reward-cost">${[r.n>0?`ノーマル×${r.n}`:'',r.r>0?`レア×${r.r}`:'',r.u>0?`スーパーレア×${r.u}`:''].filter(Boolean).join(' + ')||'無料'}</div></div><button class="del-reward-btn" onclick="delReward(${i})">✕</button></div>`).join('');
+}
+function renderRwdIconPicker(){document.getElementById('rwd-icon-picker').innerHTML=RWD_ICONS.map(ic=>`<span onclick="selRwdIcon('${ic}')" style="font-size:22px;cursor:pointer;padding:3px;border:2px solid ${ic===rwdIcon?'var(--pink)':'transparent'};border-radius:8px">${ic}</span>`).join('');}
+function selRwdIcon(ic){rwdIcon=ic;renderRwdIconPicker();}
+document.getElementById('rwd-add-btn').addEventListener('click',()=>{
+  const name=document.getElementById('rwd-name').value.trim();if(!name)return;
+  const n=parseInt(document.getElementById('rwd-n').value)||0;
+  const r=parseInt(document.getElementById('rwd-r').value)||0;
+  const u=parseInt(document.getElementById('rwd-u').value)||0;
+  rewards.push({icon:rwdIcon,name,n,r,u});save();document.getElementById('rwd-name').value='';renderEditRewards();
+});
+function delReward(i){if(!confirm('このごほうびを消す？'))return;rewards.splice(i,1);save();renderEditRewards();}
+
+// 名前
+function openNameModal(){document.getElementById('name-input').value=playerName;document.getElementById('name-modal').classList.add('open');setTimeout(()=>document.getElementById('name-input').focus(),100);}
+document.getElementById('name-save-btn').addEventListener('click',()=>{playerName=document.getElementById('name-input').value.trim();save();updateXpBar();renderPlayerName();document.getElementById('name-modal').classList.remove('open');});
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('name-save-btn').click();});
+document.getElementById('name-modal').addEventListener('click',e=>{if(e.target===document.getElementById('name-modal'))document.getElementById('name-modal').classList.remove('open');});
+function renderPlayerName(){const el=document.getElementById('player-name-display');if(playerName){el.textContent='💕 '+playerName;el.classList.remove('placeholder');}else{el.textContent='なまえを入力';el.classList.add('placeholder');}}
+
+// モーダル（タスク追加）
+let selQtype='once',selCat='other',selXp=20,selWd=1,customXp=50;
+
+// 種別
+document.querySelector('.type-select-modal').addEventListener('click',e=>{
+  const btn=e.target.closest('.type-opt-modal');if(!btn)return;
+  selQtype=btn.dataset.qtype;
+  document.querySelectorAll('.type-opt-modal').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');
+  document.getElementById('due-group').style.display=(selQtype==='daily'||selQtype==='weekly')?'none':'';
+  document.getElementById('weekday-group').style.display=selQtype==='weekly'?'':'none';
+});
+
+// 曜日
+function renderWd(){document.getElementById('weekday-select-modal').innerHTML=DAYS.map((d,i)=>`<button class="wd-btn-modal${i===selWd?' selected':''}" onclick="selWdFn(${i})">${d}</button>`).join('');}
+function selWdFn(i){selWd=i;renderWd();}
+
+// XP選択
+const XP_OPTS=[{s:'⭐',l:'かんたん',v:10},{s:'⭐⭐',l:'ふつう',v:20},{s:'⭐⭐⭐',l:'むずかしい',v:30},{s:'🌟',l:'ハード',v:50},{s:'💎',l:'最強！',v:'custom'}];
+function renderXpSel(){
+  document.getElementById('xp-select-modal').innerHTML=XP_OPTS.map(p=>{
+    const isC=p.v==='custom',isSel=isC?(selXp==='custom'):(selXp===p.v);
+    if(isC)return`<div class="xp-opt-modal${isSel?' selected':''}" data-xpv="custom" style="min-width:60px"><span class="xs">${p.s}</span><input id="custom-xp" type="number" min="1" max="9999" value="${customXp}" onclick="event.stopPropagation();selXp='custom';" oninput="customXp=Math.max(1,parseInt(this.value)||1);selXp='custom';" style="width:48px;border:2px solid ${isSel?'var(--pink-light)':'var(--pink-pale)'};border-radius:8px;font-size:12px;font-family:inherit;text-align:center;padding:2px;background:white;outline:none;color:var(--text)"><span style="font-size:9px">pt</span><br>${p.l}</div>`;
+    return`<button class="xp-opt-modal${isSel?' selected':''}" data-xpv="${p.v}"><span class="xs">${p.s}</span><span class="xv">${p.v}pt</span>${p.l}</button>`;
+  }).join('');
+}
+document.getElementById('xp-select-modal').addEventListener('click',e=>{
+  const btn=e.target.closest('.xp-opt-modal');if(!btn)return;
+  const v=btn.dataset.xpv;if(v==='custom'){selXp='custom';renderXpSel();setTimeout(()=>document.getElementById('custom-xp')?.focus(),50);return;}
+  selXp=parseInt(v);renderXpSel();
+});
+function getSelXp(){return selXp==='custom'?(customXp||50):selXp;}
+
+// カテゴリ
+const catGrid=document.getElementById('cat-grid-modal');
+catGrid.innerHTML=CATS.map(c=>`<div class="cat-btn-modal${c.id===selCat?' selected':''}" data-cid="${c.id}"><span class="ci">${c.icon}</span>${c.name}</div>`).join('');
+catGrid.addEventListener('click',e=>{const btn=e.target.closest('.cat-btn-modal');if(!btn)return;selCat=btn.dataset.cid;catGrid.querySelectorAll('.cat-btn-modal').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});
+
+document.getElementById('add-btn').addEventListener('click',()=>{
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('task-input').focus();
+  document.getElementById('due-input').value=today();
+  renderXpSel();renderWd();
+});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');});
+document.getElementById('submit-btn').addEventListener('click',()=>{
+  const title=document.getElementById('task-input').value.trim();if(!title)return;
+  tasks.push({id:Date.now(),title,cat:selCat,qtype:selQtype,weekday:selQtype==='weekly'?selWd:null,due:(selQtype==='daily'||selQtype==='weekly')?'':document.getElementById('due-input').value,xp:getSelXp(),done:false});
+  save();renderTasks();renderSeals();updateXpBar();
+  document.getElementById('task-input').value='';
+  document.getElementById('modal').classList.remove('open');
+});
+document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('submit-btn').click();});
+
+// タブ
+document.querySelector('.type-bar').addEventListener('click',e=>{const btn=e.target.closest('.type-btn');if(!btn)return;document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentType=btn.dataset.type;renderTasks();});
+document.getElementById('cat-tabs').addEventListener('click',e=>{const btn=e.target.closest('.cat-tab');if(!btn)return;document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentFilter=btn.dataset.filter;renderTasks();});
+
+// ===== カウントダウン =====
+const CD_PRESETS=[
+  {name:'夏休み',icon:'🏖️',date:'2025-07-20'},
+  {name:'冬休み',icon:'⛄',date:'2025-12-24'},
+  {name:'春休み',icon:'🌸',date:'2026-03-25'},
+  {name:'運動会',icon:'🏃',date:''},
+  {name:'発表会',icon:'🎹',date:''},
+  {name:'遠足',icon:'🍱',date:''},
+  {name:'テスト',icon:'📝',date:''},
+  {name:'誕生日',icon:'🎂',date:''},
+  {name:'クリスマス',icon:'🎄',date:'2025-12-25'},
+];
+const CD_ICONS=['🏖️','⛄','🌸','🏃','🎹','🍱','📝','🎂','🎄','🎀','💕','🎵','🎉','🍰','🌟','🦋','🐰','🎪'];
+let countdowns=JSON.parse(localStorage.getItem('cw_countdowns')||'[]');
+let selCdIcon='🌟';
+function saveCd(){localStorage.setItem('cw_countdowns',JSON.stringify(countdowns));}
+function cdDiff(d){if(!d)return null;const dt=new Date(d+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);return Math.round((dt-n)/86400000);}
+function renderCountdowns(){
+  const list=document.getElementById('cd-list');
+  if(countdowns.length===0){list.innerHTML='<div style="font-size:11px;color:var(--text-light);padding:10px 4px;">＋からイベントを追加してね 🌸</div>';return;}
+  const sorted=[...countdowns].sort((a,b)=>{const da=cdDiff(a.date),db=cdDiff(b.date);if(da===null)return 1;if(db===null)return -1;if(da<0&&db>=0)return 1;if(db<0&&da>=0)return -1;return da-db;});
+  list.innerHTML=sorted.map(cd=>{
+    const diff=cdDiff(cd.date);
+    let cls='',days='',unit='あと';
+    if(diff===null){cls='past';days='?';}
+    else if(diff<0){cls='past';days=(-diff);unit='日前';}
+    else if(diff===0){cls='urgent';days='今日';unit='';}
+    else if(diff<=7){cls='urgent';days=diff;}
+    else if(diff<=30){cls='soon';days=diff;}
+    else{days=diff;}
+    const dCls=diff!==null&&diff>=0&&diff<=7?'urgent':diff!==null&&diff>7&&diff<=30?'soon':'';
+    const idx=countdowns.indexOf(cd);
+    return`<div class="cd-card ${cls}"><button class="cd-del" onclick="delCd(${idx})">✕</button><div class="cd-icon-big">${cd.icon}</div><div class="cd-days ${dCls}">${days}</div><div class="cd-unit">${unit}${diff!==null&&diff>0?'日':''}</div><div class="cd-name">${escH(cd.name)}</div></div>`;
+  }).join('');
+}
+function delCd(i){countdowns.splice(i,1);saveCd();renderCountdowns();}
+function openCdModal(){
+  document.getElementById('cd-name-input').value='';
+  document.getElementById('cd-date-input').value=today();
+  renderCdIconPicker();
+  document.getElementById('cd-modal').classList.add('open');
+}
+document.getElementById('cd-preset-grid').innerHTML=CD_PRESETS.map((p,i)=>`<button class="cd-preset-btn" onclick="cdPreset(${i})"><span class="pi">${p.icon}</span>${p.name}</button>`).join('');
+function cdPreset(i){
+  const p=CD_PRESETS[i];
+  document.getElementById('cd-name-input').value=p.name;
+  selCdIcon=p.icon;renderCdIconPicker();
+  if(p.date){let d=p.date;const diff=cdDiff(d);if(diff!==null&&diff<0)d=(parseInt(d.slice(0,4))+1)+d.slice(4);document.getElementById('cd-date-input').value=d;}
+  else document.getElementById('cd-date-input').value=today();
+}
+function renderCdIconPicker(){document.getElementById('cd-icon-picker').innerHTML=CD_ICONS.map(ic=>`<span onclick="selCdIconFn('${ic}')" style="font-size:20px;cursor:pointer;padding:3px;border:2px solid ${ic===selCdIcon?'var(--pink)':'transparent'};border-radius:8px">${ic}</span>`).join('');}
+function selCdIconFn(ic){selCdIcon=ic;renderCdIconPicker();}
+document.getElementById('cd-submit-btn').addEventListener('click',()=>{
+  const name=document.getElementById('cd-name-input').value.trim();
+  const date=document.getElementById('cd-date-input').value;
+  if(!name){document.getElementById('cd-name-input').focus();return;}
+  if(!date){document.getElementById('cd-date-input').focus();return;}
+  countdowns.push({name,icon:selCdIcon,date});saveCd();renderCountdowns();
+  document.getElementById('cd-modal').classList.remove('open');
+});
+document.getElementById('cd-modal').addEventListener('click',e=>{if(e.target===document.getElementById('cd-modal'))document.getElementById('cd-modal').classList.remove('open');});
+
+// 初期化
+const now=new Date();
+dailyInit();
+renderPlayerName();
+renderStreak();
+renderBonus();
+renderDailyMsg();
+renderSeals();
+renderTasks();
+updateXpBar();
+initGoal();
+renderCountdowns();
+showOmikuji();
+</script>
+</body>
+</html>
