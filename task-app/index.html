@@ -2,936 +2,1513 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイクラ やることリスト</title>
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="やること">
-  <meta name="theme-color" content="#5D8A3C">
+  <meta name="apple-mobile-web-app-title" content="クエストボード">
+  <title>クエストボード</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    :root { --grass:#5D9E32;--grass-dark:#3E7A1A;--stone-dark:#4A4A4A;--stone:#7A7A7A;--diamond:#4DDEDE;--gold:#FFD700;--iron:#C0C0C0;--redstone:#CC2200;--emerald:#00CC44;--bg:#2C2416;--panel:#3D3020;--panel2:#4A3A28;--border:#1A1208;--text:#FFE8B0;--text-dim:#AA9060; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{font-family:'DotGothic16','MS Gothic',monospace;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:110px;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 1px,transparent 1px 32px),repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 1px,transparent 1px 32px);}
 
-    :root {
-      --grass: #5D8A3C;
-      --dirt: #8B6340;
-      --stone: #888888;
-      --wood: #9E7C3E;
-      --gold: #FFD700;
-      --sky: #87CEEB;
-      --dark: #1A1A1A;
-      --white: #F0F0F0;
-      --diamond: #5CE6E6;
-      --redstone: #CC0000;
-      --emerald: #17DD62;
-      --xp: #7EC850;
-    }
+    /* ===== ヘッダー ===== */
+    header{background:var(--grass-dark);border-bottom:6px solid #2A5210;position:sticky;top:0;z-index:100;}
+    .header-top{background:var(--grass);padding:12px 16px 8px;border-bottom:4px solid var(--grass-dark);}
+    .header-row{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    header h1{font-size:18px;color:#FFFF55;text-shadow:2px 2px 0 #555500;}
+    .name-area{display:flex;align-items:center;gap:6px;}
+    .player-name{font-size:14px;color:#FFFF55;text-shadow:1px 1px 0 #333300;background:rgba(0,0,0,.3);padding:3px 10px;border:2px solid rgba(255,255,85,.4);min-width:80px;cursor:pointer;}
+    .player-name.placeholder{color:var(--text-dim);font-size:12px;}
+    .name-edit-btn{background:var(--gold);color:#4A3000;border:2px solid var(--border);padding:3px 8px;font-size:11px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 var(--border);}
+    .date-bar{background:#1A1208;padding:6px 16px;display:flex;justify-content:space-between;align-items:center;}
+    .date-display{font-size:15px;color:#FFFF55;text-shadow:1px 1px 0 #555500;letter-spacing:1px;}
+    .xp-badge{background:var(--gold);color:#4A3000;padding:3px 10px;font-size:12px;font-weight:bold;}
+    .xp-section{padding:6px 16px 4px;background:var(--grass-dark);}
+    .xp-label{display:flex;justify-content:space-between;font-size:11px;color:#CCFF88;margin-bottom:3px;}
+    .xp-bar{height:12px;background:#1A1208;border:2px solid var(--border);overflow:hidden;}
+    .xp-fill{height:100%;background:linear-gradient(90deg,#55FF55,#00AA00);transition:width .5s;box-shadow:inset 0 2px 0 rgba(255,255,255,.3);}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ===== カウントダウン ===== */
+    .countdown-section{padding:6px 16px 2px;}
+    .countdown-title{font-size:11px;color:var(--text-dim);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+    .countdown-add-btn{background:var(--gold);color:#4A3000;border:2px solid var(--border);padding:2px 8px;font-size:10px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 var(--border);}
+    .countdown-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+    .countdown-list::-webkit-scrollbar{display:none;}
+    .cd-card{flex-shrink:0;width:110px;background:var(--panel);border:3px solid var(--border);box-shadow:2px 2px 0 var(--border);padding:8px;text-align:center;position:relative;cursor:default;}
+    .cd-card.urgent{border-color:#FF4400;box-shadow:2px 2px 0 #660000,0 0 8px rgba(255,68,0,.4);}
+    .cd-card.soon{border-color:var(--gold);box-shadow:2px 2px 0 #664400;}
+    .cd-card.far{border-color:#336633;}
+    .cd-card.past{opacity:.4;border-color:#333;}
+    .cd-icon{font-size:24px;margin-bottom:3px;}
+    .cd-days{font-size:22px;font-weight:bold;color:#FFFF55;text-shadow:2px 2px 0 #555500;line-height:1;}
+    .cd-days.urgent{color:#FF5555;text-shadow:2px 2px 0 #440000;}
+    .cd-days.soon{color:var(--gold);text-shadow:2px 2px 0 #553300;}
+    .cd-unit{font-size:10px;color:var(--text-dim);margin-bottom:2px;}
+    .cd-name{font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .cd-delete{position:absolute;top:2px;right:3px;background:none;border:none;color:#666;font-size:10px;cursor:pointer;padding:0;}
+    .cd-delete:hover{color:#FF5555;}
 
-    body {
-      font-family: 'Press Start 2P', monospace, sans-serif;
-      background-color: var(--sky);
-      background-image:
-        repeating-linear-gradient(0deg, transparent, transparent 63px, rgba(255,255,255,0.05) 63px, rgba(255,255,255,0.05) 64px),
-        repeating-linear-gradient(90deg, transparent, transparent 63px, rgba(255,255,255,0.05) 63px, rgba(255,255,255,0.05) 64px);
-      min-height: 100vh;
-      padding: 12px 12px 40px;
-      color: var(--dark);
-    }
+    /* ===== 期限が近いクエスト ===== */
+    .urgent-section{padding:4px 16px 6px;}
+    .urgent-title{font-size:11px;color:var(--text-dim);margin-bottom:5px;}
+    .urgent-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+    .urgent-list::-webkit-scrollbar{display:none;}
+    .urgent-card{flex-shrink:0;width:150px;background:var(--panel);border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);padding:7px 9px;display:flex;align-items:center;gap:7px;cursor:pointer;}
+    .urgent-card.overdue{border-color:var(--redstone);background:#220000;}
+    .urgent-card.today{border-color:var(--gold);background:#221100;}
+    .urgent-card.soon{border-color:var(--emerald);background:#001a00;}
+    .urgent-cat{font-size:18px;flex-shrink:0;}
+    .urgent-body{flex:1;min-width:0;}
+    .urgent-name{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .urgent-days{font-size:10px;font-weight:bold;margin-top:2px;}
+    .urgent-days.overdue{color:#FF5555;}
+    .urgent-days.today{color:var(--gold);}
+    .urgent-days.soon{color:#55FF55;}
+    .urgent-days.normal{color:var(--text-dim);}
 
-    h1 {
-      text-align: center;
-      font-size: clamp(11px, 2.8vw, 17px);
-      color: var(--white);
-      text-shadow: 3px 3px 0 var(--dark);
-      margin-bottom: 12px;
-      padding: 10px;
-      background: var(--grass);
-      border: 4px solid var(--dark);
-    }
+    /* カウントダウン追加モーダル */
+    .cd-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .cd-modal.open{opacity:1;pointer-events:all;}
+    .cd-modal-box{background:var(--panel);border:4px solid var(--border);padding:20px 18px 24px;width:88%;max-width:360px;box-shadow:6px 6px 0 var(--border);}
+    .cd-modal-title{color:#FFFF55;text-shadow:2px 2px 0 #555500;font-size:15px;margin-bottom:14px;text-align:center;}
+    .preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px;}
+    .preset-btn{padding:7px 4px;background:var(--stone-dark);border:2px solid var(--border);cursor:pointer;text-align:center;font-size:10px;color:var(--text-dim);font-family:inherit;box-shadow:2px 2px 0 var(--border);}
+    .preset-btn .p-icon{font-size:16px;display:block;margin-bottom:2px;}
+    .preset-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--border);}
+    .divider{text-align:center;font-size:11px;color:var(--text-dim);margin:8px 0;}
 
-    .container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    /* ===== 今月の目標 ===== */
+    .goal-section{margin:8px 16px 0;background:var(--panel);border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(255,255,255,.08),3px 3px 0 var(--border);padding:10px 12px;}
+    .goal-title{font-size:11px;color:var(--gold);margin-bottom:6px;letter-spacing:1px;}
+    .goal-input{width:100%;background:var(--stone-dark);border:2px solid var(--border);box-shadow:inset 2px 2px 0 rgba(0,0,0,.4);padding:8px 10px;font-size:14px;font-family:inherit;color:#FFFF55;outline:none;}
+    .goal-input::placeholder{color:var(--text-dim);}
+    .goal-input:focus{border-color:var(--grass);}
+    .goal-progress{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:10px;color:var(--text-dim);}
+    .goal-progress-bar{flex:1;height:10px;background:#1A1208;border:2px solid var(--border);overflow:hidden;}
+    .goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#FFAA00);transition:width .5s;box-shadow:inset 0 2px 0 rgba(255,255,255,.3);}
 
-    /* ===== PLAYER STATUS ===== */
-    .player-card {
-      background: var(--dark);
-      border: 4px solid var(--gold);
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .player-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .player-face {
-      width: 48px; height: 48px;
-      image-rendering: pixelated;
-      flex-shrink: 0;
-      font-size: 40px;
-      line-height: 1;
-    }
-    .player-info { flex: 1; min-width: 120px; }
-    .player-name {
-      font-size: clamp(9px, 2.2vw, 13px);
-      color: var(--gold);
-      text-shadow: 2px 2px 0 #000;
-      margin-bottom: 4px;
-    }
-    .player-level {
-      font-size: clamp(8px, 2vw, 11px);
-      color: var(--xp);
-    }
+    /* ===== ストリーク・ボーナス バー ===== */
+    .info-bar{display:flex;gap:6px;padding:6px 16px;background:#221A10;border-bottom:2px solid var(--border);}
+    .streak-box{flex:1;background:var(--panel);border:2px solid #884400;padding:5px 10px;display:flex;align-items:center;gap:6px;box-shadow:2px 2px 0 var(--border);}
+    .streak-num{font-size:18px;color:#FF8800;text-shadow:1px 1px 0 #440000;font-weight:bold;}
+    .streak-label{font-size:10px;color:var(--text-dim);line-height:1.4;}
+    .bonus-box{flex:1;background:var(--panel);border:2px solid #008844;padding:5px 10px;display:flex;align-items:center;gap:6px;box-shadow:2px 2px 0 var(--border);cursor:pointer;}
+    .bonus-box.claimed{border-color:#445533;opacity:.6;cursor:default;}
+    .bonus-icon{font-size:18px;}
+    .bonus-label{font-size:10px;color:var(--text-dim);line-height:1.4;}
+    .bonus-label b{color:#55FF55;font-size:12px;}
 
-    /* XP バー */
-    .xp-bar-wrap {
-      background: #333;
-      border: 2px solid #555;
-      height: 14px;
-      position: relative;
-    }
-    .xp-bar {
-      height: 100%;
-      background: var(--xp);
-      transition: width 0.4s;
-    }
-    .xp-text {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 7px; color: var(--white);
-    }
+    /* ===== 今日の一言 ===== */
+    .daily-msg{margin:6px 16px;background:var(--panel);border:2px solid #554422;padding:8px 12px;font-size:12px;color:#FFDD88;box-shadow:2px 2px 0 var(--border);line-height:1.6;}
+    .daily-msg::before{content:'💬 ';font-size:14px;}
 
-    /* ストリーク */
-    .streak-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .streak-fire {
-      font-size: clamp(20px, 5vw, 28px);
-      line-height: 1;
-    }
-    .streak-info { flex: 1; }
-    .streak-count {
-      font-size: clamp(10px, 2.5vw, 15px);
-      color: #FF8C00;
-      text-shadow: 2px 2px 0 #000;
-    }
-    .streak-label { font-size: 8px; color: #aaa; margin-top: 2px; }
+    /* ===== ホットバー ===== */
+    .hotbar-wrap{margin:6px 16px 4px;}
+    .hotbar-label{font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:4px;}
+    .hotbar{background:var(--panel);padding:6px;display:flex;gap:3px;justify-content:center;border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(255,255,255,.08),3px 3px 0 var(--border);}
+    .hotbar-slot{width:38px;height:38px;background:var(--stone-dark);border:2px solid #222;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative;}
+    .hotbar-slot.filled{background:var(--panel2);}
+    .hotbar-slot.filled::after{content:'';position:absolute;top:2px;left:2px;right:2px;height:3px;background:rgba(255,255,255,.25);}
+    .hotbar-slot.empty{opacity:.3;}
+    .hotbar-slot.rare{background:#1A0033;border-color:#AA44FF;animation:rarePulse 2s infinite;}
+    @keyframes rarePulse{0%,100%{box-shadow:0 0 4px #AA44FF}50%{box-shadow:0 0 12px #AA44FF,inset 0 0 6px rgba(170,68,255,.3)}}
 
-    /* ===== PAGE LINK BUTTONS ===== */
-    .page-links {
-      display: flex;
-      gap: 10px;
-    }
-    .page-link-btn {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 12px;
-      border: 4px solid var(--dark);
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .chest-link  { background: #3B2306; border-color: var(--wood); }
-    .badge-link  { background: #1A1A2E; border-color: #3A5FCD; }
-    .page-link-icon  { font-size: 24px; }
-    .page-link-label { flex: 1; font-size: clamp(9px, 2.2vw, 12px); color: var(--gold); text-shadow: 1px 1px 0 #000; }
-    .page-link-arrow { font-size: 10px; color: #aaa; }
+    /* ===== クエスト種別 ===== */
+    .quest-type-bar{display:flex;margin:6px 16px 4px;border:2px solid var(--border);box-shadow:3px 3px 0 var(--border);}
+    .quest-type-btn{flex:1;padding:9px 4px;text-align:center;font-size:13px;background:var(--stone-dark);color:var(--text-dim);border:none;cursor:pointer;font-family:inherit;border-right:2px solid var(--border);}
+    .quest-type-btn:last-child{border-right:none;}
+    .quest-type-btn.active{background:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
 
-    /* ===== COLLAPSIBLE ===== */
-    .collapse-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      user-select: none;
-    }
-    .collapse-arrow { font-size: 10px; color: #aaa; transition: transform 0.2s; }
-    .collapse-header.open .collapse-arrow { transform: rotate(90deg); }
-    .collapse-body { display: none; margin-top: 10px; }
-    .collapse-body.open { display: block; }
+    /* ===== タブ ===== */
+    .tabs{display:flex;gap:4px;padding:4px 16px;overflow-x:auto;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{flex-shrink:0;padding:6px 11px;font-size:11px;background:var(--stone-dark);color:var(--text-dim);cursor:pointer;border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);white-space:nowrap;}
+    .tab.active{background:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
 
-    /* ===== ITEM CHEST (ドロップアイテム) ===== */
-    .chest-card {
-      background: #3B2306;
-      border: 4px solid var(--wood);
-      padding: 12px;
-    }
-    .chest-title {
-      font-size: clamp(8px, 2vw, 10px);
-      color: var(--gold);
-    }
-    .items-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .item-slot {
-      width: 44px; height: 44px;
-      background: #555;
-      border: 3px solid #888;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      font-size: 22px;
-      position: relative;
-      cursor: default;
-    }
-    .item-slot .item-count {
-      position: absolute;
-      bottom: 1px; right: 3px;
-      font-size: 8px;
-      color: var(--white);
-      text-shadow: 1px 1px 0 #000;
-    }
-    .item-slot.empty { opacity: 0.3; }
-    .chest-empty { font-size: 8px; color: #aaa; }
+    /* ===== タスクカード ===== */
+    .task-list{padding:8px 16px;display:flex;flex-direction:column;gap:8px;}
+    .task-card{background:var(--panel);border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(255,255,255,.06),3px 3px 0 var(--border);padding:10px 12px;display:flex;align-items:center;gap:10px;position:relative;overflow:hidden;transition:opacity .3s;}
+    .task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;}
+    .task-card.done{opacity:.45;}
+    .task-card.done .task-title{text-decoration:line-through;color:var(--text-dim);}
+    .daily-badge{position:absolute;top:4px;right:48px;font-size:9px;background:#003366;color:#55AAFF;border:1px solid #55AAFF;padding:1px 5px;}
+    .cat-icon{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--stone-dark);border:2px solid var(--border);flex-shrink:0;}
+    .task-body{flex:1;min-width:0;}
+    .task-title{font-size:14px;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .task-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+    .cat-tag{font-size:10px;color:var(--text-dim);background:var(--stone-dark);padding:2px 5px;border:1px solid var(--border);}
+    .countdown{font-size:11px;padding:2px 7px;border:2px solid;font-weight:bold;}
+    .countdown.overdue{background:#440000;border-color:var(--redstone);color:#FF5555;}
+    .countdown.today{background:#443300;border-color:var(--gold);color:var(--gold);}
+    .countdown.soon{background:#003300;border-color:var(--emerald);color:#55FF55;}
+    .countdown.normal{background:var(--stone-dark);border-color:var(--stone);color:var(--text-dim);}
+    .check-btn{width:36px;height:36px;background:var(--stone-dark);border:3px solid var(--border);box-shadow:inset 1px 1px 0 rgba(255,255,255,.15),2px 2px 0 var(--border);color:transparent;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .check-btn.done{background:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
+    .delete-btn{width:26px;height:26px;background:#440000;border:2px solid var(--border);color:#FF5555;font-size:11px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+    .empty-state{text-align:center;padding:36px 20px;color:var(--text-dim);}
+    .empty-state .icon{font-size:48px;margin-bottom:10px;}
+    .empty-state p{font-size:12px;line-height:2;}
 
-    /* ===== BADGES ===== */
-    .badges-card {
-      background: #1A1A2E;
-      border: 4px solid var(--lapis, #3A5FCD);
-      padding: 12px;
-    }
-    .badges-title {
-      font-size: clamp(8px, 2vw, 10px);
-      color: var(--diamond);
-      margin-bottom: 10px;
-    }
-    .badges-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .badge {
-      background: #2A2A4A;
-      border: 2px solid #444;
-      padding: 6px 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      opacity: 0.4;
-      transition: opacity 0.3s;
-      min-width: 0;
-    }
-    .badge.unlocked {
-      opacity: 1;
-      border-color: var(--gold);
-      background: #2A2A1A;
-    }
-    .badge-icon { font-size: 18px; }
-    .badge-info { }
-    .badge-name  { font-size: 7px; color: var(--gold); }
-    .badge-desc  { font-size: 6px; color: #aaa; margin-top: 2px; }
+    /* ===== FAB ===== */
+    .fab{position:fixed;bottom:28px;right:20px;width:62px;height:62px;background:var(--grass);color:#FFFF55;font-size:30px;border:4px solid var(--border);box-shadow:inset 2px 2px 0 rgba(255,255,255,.3),inset -2px -2px 0 rgba(0,0,0,.4),4px 4px 0 var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;text-shadow:2px 2px 0 #333300;}
+    .fab:active{transform:translate(3px,3px);box-shadow:inset 2px 2px 0 rgba(0,0,0,.3),1px 1px 0 var(--border);}
 
-    /* ===== COUNTDOWN ===== */
-    .countdown-card {
-      background: var(--dirt);
-      border: 4px solid var(--dark);
-      padding: 14px;
-      position: relative;
-    }
-    .countdown-card::before {
-      content: ''; position: absolute; inset: 3px;
-      border: 2px solid rgba(255,255,255,0.15); pointer-events: none;
-    }
-    .countdown-title {
-      font-size: clamp(8px, 2vw, 11px);
-      color: var(--gold); text-shadow: 2px 2px 0 var(--dark);
-      margin-bottom: 12px;
-    }
-    .event-input-row {
-      display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
-    }
-    .event-input-row input[type="text"] {
-      flex: 1; min-width: 100px;
-      font-family: inherit; font-size: 9px; padding: 8px;
-      border: 3px solid var(--dark); background: #3A2B1A;
-      color: var(--white); outline: none;
-    }
-    .event-input-row input[type="date"] {
-      font-family: inherit; font-size: 9px; padding: 8px;
-      border: 3px solid var(--dark); background: #3A2B1A;
-      color: var(--white); outline: none; width: 100%;
-    }
-    .btn-add-event {
-      font-family: inherit; font-size: 9px; padding: 8px 12px;
-      background: var(--grass); color: var(--white);
-      border: 3px solid var(--dark); cursor: pointer;
-      text-shadow: 1px 1px 0 var(--dark); white-space: nowrap;
-    }
-    .btn-add-event:active { transform: translateY(2px); }
-    .events-list { display: flex; flex-direction: column; gap: 8px; }
-    .event-item {
-      background: #2D1F0E; border: 3px solid var(--dark);
-      padding: 10px; display: flex; justify-content: space-between;
-      align-items: center; gap: 8px; flex-wrap: wrap;
-    }
-    .event-name { font-size: 8px; color: var(--gold); text-shadow: 1px 1px 0 var(--dark); flex: 1; min-width: 80px; }
-    .event-days { font-size: clamp(12px, 3.5vw, 20px); color: var(--diamond); text-shadow: 2px 2px 0 var(--dark); white-space: nowrap; }
-    .btn-delete-event {
-      font-family: inherit; font-size: 8px; padding: 4px 8px;
-      background: var(--redstone); color: var(--white);
-      border: 2px solid var(--dark); cursor: pointer;
-    }
-    .event-days.today { color: var(--gold); animation: blink 1s step-end infinite; }
-    .event-days.past  { color: #888; }
-    @keyframes blink { 50% { opacity: 0.4; } }
+    /* ===== モーダル共通 ===== */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .modal{background:var(--panel);border:4px solid var(--border);border-bottom:none;padding:18px 18px 38px;width:100%;max-width:600px;transform:translateY(100%);transition:transform .3s ease;}
+    .modal-overlay.open .modal{transform:translateY(0);}
+    .modal-title{font-size:15px;color:#FFFF55;text-shadow:2px 2px 0 #333300;margin-bottom:14px;text-align:center;background:var(--grass-dark);padding:8px;border:2px solid var(--border);}
+    .form-group{margin-bottom:12px;}
+    .form-group label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:1px;}
+    .form-group input,.form-group select{width:100%;padding:10px 12px;background:var(--stone-dark);border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(0,0,0,.4);font-size:15px;font-family:inherit;color:var(--text);outline:none;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--grass);}
+    .type-select{display:flex;gap:6px;}
+    .type-opt{flex:1;padding:10px 4px;text-align:center;background:var(--stone-dark);border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);cursor:pointer;font-size:12px;color:var(--text-dim);font-family:inherit;}
+    .type-opt.selected{background:var(--grass-dark);border-color:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
+    .type-opt .t-icon{font-size:22px;display:block;margin-bottom:4px;}
+    .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+    .cat-btn{padding:7px 3px;background:var(--stone-dark);border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);cursor:pointer;text-align:center;font-size:10px;color:var(--text-dim);font-family:inherit;}
+    .cat-btn .icon{font-size:18px;display:block;margin-bottom:3px;}
+    .cat-btn.selected{background:var(--grass-dark);border-color:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
+    .btn-submit{width:100%;padding:13px;background:var(--grass);color:#FFFF55;font-size:14px;font-family:inherit;border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(255,255,255,.25),3px 3px 0 var(--border);cursor:pointer;margin-top:6px;text-shadow:2px 2px 0 #333300;letter-spacing:1px;}
+    .btn-submit:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--border);}
+    /* 曜日選択 */
+    .weekday-select{display:flex;gap:4px;}
+    .wd-btn{flex:1;padding:8px 2px;background:var(--stone-dark);border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);cursor:pointer;text-align:center;font-family:inherit;font-size:13px;color:var(--text-dim);}
+    .wd-btn.selected{background:var(--grass-dark);border-color:var(--grass);color:#FFFF55;text-shadow:1px 1px 0 #333300;}
+    /* 毎週バッジ */
+    .weekly-badge{position:absolute;top:4px;right:48px;font-size:9px;background:#003333;color:#55FFFF;border:1px solid #55FFFF;padding:1px 5px;}
+    /* XP選択 */
+    .xp-select{display:flex;gap:5px;flex-wrap:wrap;}
+    .xp-opt{flex:1;min-width:56px;padding:8px 4px;background:var(--stone-dark);border:2px solid var(--border);box-shadow:2px 2px 0 var(--border);cursor:pointer;text-align:center;font-family:inherit;color:var(--text-dim);font-size:10px;line-height:1.5;}
+    .xp-opt .xo-star{font-size:14px;display:block;margin-bottom:2px;}
+    .xp-opt .xo-val{font-size:13px;font-weight:bold;display:block;}
+    .xp-opt.selected{border-color:var(--gold);background:#332200;color:var(--gold);}
+    /* タスクカードのXPバッジ */
+    .xp-tag{font-size:10px;padding:1px 6px;border:1px solid #664400;background:#221100;color:#FFAA00;}
 
-    /* ===== TASKS ===== */
-    .tasks-card {
-      background: var(--stone);
-      border: 4px solid var(--dark);
-      padding: 14px;
-    }
-    .task-list {
-      min-height: 40px;
-    }
-    .add-task-card {
-      background: var(--stone);
-      border: 4px solid var(--dark);
-      padding: 12px;
-    }
-    .tasks-card::before {
-      content: ''; position: absolute; inset: 3px;
-      border: 2px solid rgba(255,255,255,0.15); pointer-events: none;
-    }
-    .tasks-title {
-      font-size: clamp(8px, 2vw, 11px); color: var(--white);
-      text-shadow: 2px 2px 0 var(--dark); margin-bottom: 12px;
-    }
-    .add-task-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .add-task-row input {
-      flex: 1; font-family: inherit; font-size: 9px; padding: 8px;
-      border: 3px solid var(--dark); background: #555;
-      color: var(--white); outline: none;
-    }
-    .btn-add-task {
-      font-family: inherit; font-size: 9px; padding: 8px 12px;
-      background: var(--grass); color: var(--white);
-      border: 3px solid var(--dark); cursor: pointer;
-      text-shadow: 1px 1px 0 var(--dark);
-    }
-    .btn-add-task:active { transform: translateY(2px); }
-    .task-list { display: flex; flex-direction: column; gap: 8px; }
-    .task-item {
-      background: #444; border: 3px solid var(--dark);
-      padding: 10px 12px; display: flex; align-items: center;
-      gap: 10px; cursor: pointer; position: relative;
-    }
-    .task-item:active { transform: translateY(1px); }
-    .task-item.done { background: #2A3D2A; }
-    .task-checkbox {
-      width: 24px; height: 24px; border: 3px solid var(--dark);
-      background: #333; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 14px;
-    }
-    .task-item.done .task-checkbox { background: var(--grass); }
-    .task-text {
-      flex: 1; font-size: clamp(7px, 1.8vw, 10px);
-      color: var(--white); text-shadow: 1px 1px 0 var(--dark); word-break: break-all;
-    }
-    .task-item.done .task-text { text-decoration: line-through; color: #aaa; }
-    .btn-delete-task {
-      font-size: 14px; background: none; border: none;
-      cursor: pointer; color: #aaa; padding: 0 4px; line-height: 1;
-    }
-    .progress-bar-wrap {
-      margin-top: 10px; background: #333;
-      border: 3px solid var(--dark); height: 20px; position: relative;
-    }
-    .progress-bar { height: 100%; background: var(--diamond); transition: width 0.3s; }
-    .progress-text {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 8px; color: var(--dark); text-shadow: none;
-    }
-    .empty-msg { font-size: 8px; color: #bbb; text-align: center; padding: 12px 0; }
+    /* ===== 名前モーダル ===== */
+    .name-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .name-modal.open{opacity:1;pointer-events:all;}
+    .name-modal-box{background:var(--panel);border:4px solid var(--border);padding:24px 20px;width:88%;max-width:360px;text-align:center;box-shadow:6px 6px 0 var(--border);}
+    .name-modal-box h3{color:#FFFF55;text-shadow:2px 2px 0 #555500;font-size:16px;margin-bottom:16px;}
 
-    /* ===== POPUP ===== */
-    .popup-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      align-items: center; justify-content: center;
-    }
-    .popup-overlay.show { display: flex; }
-    .popup {
-      background: var(--dark);
-      border: 4px solid var(--gold);
-      padding: 24px 20px;
-      text-align: center;
-      max-width: 320px;
-      width: 90%;
-      animation: popIn 0.2s ease;
-    }
-    @keyframes popIn {
-      from { transform: scale(0.7); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
-    .popup-icon  { font-size: 48px; margin-bottom: 10px; }
-    .popup-title { font-size: clamp(11px, 3vw, 15px); color: var(--gold); text-shadow: 2px 2px 0 #000; margin-bottom: 8px; }
-    .popup-body  { font-size: clamp(9px, 2.2vw, 12px); color: var(--white); line-height: 1.7; margin-bottom: 16px; }
-    .popup-close {
-      font-family: inherit; font-size: 11px; font-weight: bold;
-      padding: 10px 24px; background: var(--grass);
-      color: var(--white); border: 3px solid var(--dark); cursor: pointer;
-    }
+    /* ===== おみくじスプラッシュ ===== */
+    .splash{position:fixed;inset:0;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:900;transition:opacity .5s;}
+    .splash.hide{opacity:0;pointer-events:none;}
+    .splash-title{font-size:13px;color:var(--text-dim);margin-bottom:12px;letter-spacing:2px;}
+    .omikuji-box{background:var(--panel);border:4px solid var(--border);box-shadow:6px 6px 0 var(--border);padding:20px 24px;text-align:center;width:88%;max-width:340px;}
+    .omikuji-result{font-size:36px;color:#FFFF55;text-shadow:3px 3px 0 #555500;margin-bottom:8px;}
+    .omikuji-msg{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:16px;}
+    .omikuji-bonus{font-size:12px;color:#55FF55;background:#003300;border:2px solid var(--emerald);padding:6px 12px;margin-bottom:14px;display:inline-block;}
+    .splash-btn{background:var(--grass);color:#FFFF55;border:3px solid var(--border);box-shadow:3px 3px 0 var(--border);padding:12px 32px;font-size:14px;font-family:inherit;cursor:pointer;text-shadow:1px 1px 0 #333300;letter-spacing:1px;}
 
-    footer { text-align: center; font-size: 7px; color: rgba(255,255,255,0.5); }
+    /* ===== アイテムコレクション ===== */
+    .inv-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .inv-modal.open{opacity:1;pointer-events:all;}
+    .inv-panel{background:var(--panel);border:4px solid var(--border);border-bottom:none;box-shadow:inset 2px 2px 0 rgba(255,255,255,.08);padding:16px 16px 40px;width:100%;max-width:600px;transform:translateY(100%);transition:transform .3s ease;max-height:85vh;overflow-y:auto;}
+    .inv-modal.open .inv-panel{transform:translateY(0);}
+    .inv-title{font-size:15px;color:#FFFF55;text-shadow:2px 2px 0 #555500;text-align:center;background:var(--grass-dark);padding:8px;border:2px solid var(--border);margin-bottom:12px;}
+    .inv-stats{display:flex;gap:8px;margin-bottom:12px;}
+    .inv-stat{flex:1;background:var(--stone-dark);border:2px solid var(--border);padding:8px;text-align:center;}
+    .inv-stat-num{font-size:20px;color:#FFFF55;text-shadow:1px 1px 0 #555500;}
+    .inv-stat-label{font-size:10px;color:var(--text-dim);margin-top:2px;}
+    .inv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+    .inv-slot{background:var(--stone-dark);border:2px solid #222;box-shadow:inset 1px 1px 0 rgba(255,255,255,.1);padding:8px 4px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s;}
+    .inv-slot:hover,.inv-slot.selected{border-color:var(--grass);background:var(--panel2);}
+    .inv-slot.rare-slot{border-color:#AA44FF;background:#1A0033;animation:rarePulse 2s infinite;}
+    .inv-slot-icon{font-size:26px;margin-bottom:3px;}
+    .inv-slot-name{font-size:9px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .inv-slot-count{position:absolute;bottom:3px;right:5px;font-size:10px;color:var(--gold);font-weight:bold;}
+    .inv-slot-new{position:absolute;top:2px;left:2px;font-size:8px;background:var(--redstone);color:white;padding:0 3px;}
+    .inv-slot-rare{border-color:#BB8800;background:#221100;}
+    .inv-slot-rare:hover,.inv-slot-rare.selected{border-color:var(--gold);}
+    .inv-slot-ultra{border-color:#AA44FF;background:#1A0033;animation:rarePulse 2s infinite;}
+    .inv-slot-ultra:hover,.inv-slot-ultra.selected{border-color:#DD88FF;}
+    .inv-slot-tier{position:absolute;top:2px;right:2px;font-size:7px;padding:1px 3px;border:1px solid;}
+    .inv-slot-tier.rare{color:var(--gold);border-color:#BB8800;background:#221100;}
+    .inv-slot-tier.ultra{color:#DD88FF;border-color:#AA44FF;background:#1A0033;}
+    /* アイテム詳細 */
+    .inv-detail{background:#1A1208;border:3px solid var(--border);box-shadow:inset 2px 2px 0 rgba(0,0,0,.4);padding:14px;min-height:90px;display:flex;gap:14px;align-items:center;}
+    .inv-detail-icon{font-size:44px;flex-shrink:0;}
+    .inv-detail-body{flex:1;}
+    .inv-detail-name{font-size:15px;color:#FFFF55;text-shadow:1px 1px 0 #555500;margin-bottom:4px;}
+    .inv-detail-rarity{font-size:10px;padding:2px 8px;border:1px solid;display:inline-block;margin-bottom:6px;}
+    .inv-detail-rarity.rare{color:#DD88FF;border-color:#AA44FF;background:#1A0033;}
+    .inv-detail-rarity.normal{color:var(--text-dim);border-color:#444;}
+    .inv-detail-count{font-size:12px;color:var(--text-dim);}
+    .inv-detail-date{font-size:10px;color:#666;margin-top:3px;}
+    .inv-empty{text-align:center;padding:30px;color:var(--text-dim);font-size:12px;line-height:2;}
+    /* 使うボタン */
+    .use-btn{background:#440044;color:#DD88FF;border:2px solid #AA44FF;padding:6px 16px;font-size:12px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 #220022;margin-top:8px;}
+    .use-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #220022;}
 
-    /* ===== タスク完了アニメーション ===== */
-    @keyframes taskDone {
-      0%   { transform: scale(1); }
-      30%  { transform: scale(1.06); background: #3A5A3A; }
-      100% { transform: scale(1); }
-    }
-    .task-item.just-done { animation: taskDone 0.35s ease; }
+    /* ===== ごほうびショップ ===== */
+    .shop-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:center;z-index:700;opacity:0;pointer-events:none;transition:opacity .2s;}
+    .shop-modal.open{opacity:1;pointer-events:all;}
+    .shop-panel{background:var(--panel);border:4px solid var(--border);border-bottom:none;padding:16px 16px 40px;width:100%;max-width:600px;transform:translateY(100%);transition:transform .3s ease;max-height:90vh;overflow-y:auto;}
+    .shop-modal.open .shop-panel{transform:translateY(0);}
+    .shop-title{font-size:15px;color:#FFFF55;text-shadow:2px 2px 0 #555500;text-align:center;background:#442200;padding:8px;border:2px solid var(--border);margin-bottom:12px;}
+    .shop-tabs{display:flex;gap:4px;margin-bottom:10px;}
+    .shop-tab{flex:1;padding:8px;text-align:center;font-size:12px;background:var(--stone-dark);color:var(--text-dim);border:2px solid var(--border);cursor:pointer;font-family:inherit;}
+    .shop-tab.active{background:#442200;color:var(--gold);border-color:#884400;}
+    /* ごほうびカード */
+    .reward-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+    .reward-card{background:#1A1208;border:2px solid #553300;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+    .reward-icon-big{font-size:28px;flex-shrink:0;}
+    .reward-body{flex:1;min-width:0;}
+    .reward-name{font-size:14px;color:var(--text);}
+    .reward-cost{font-size:11px;color:var(--gold);margin-top:2px;}
+    .reward-exchange-btn{background:var(--gold);color:#4A3000;border:2px solid var(--border);padding:6px 10px;font-size:11px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 var(--border);flex-shrink:0;}
+    .reward-exchange-btn:disabled{background:#4A4A4A;color:#888;cursor:default;box-shadow:none;}
+    .reward-delete-btn{background:#440000;color:#FF5555;border:2px solid var(--border);padding:4px 7px;font-size:11px;cursor:pointer;flex-shrink:0;}
+    /* 交換履歴 */
+    .history-list{display:flex;flex-direction:column;gap:6px;}
+    .history-item{background:#1A1208;border:2px solid #333;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12px;}
+    .history-status{font-size:10px;padding:2px 6px;border:1px solid;}
+    .history-status.pending{color:var(--gold);border-color:var(--gold);background:#332200;}
+    .history-status.done{color:#55FF55;border-color:var(--emerald);background:#003300;}
+    /* ごほうび追加フォーム */
+    .add-reward-form{background:#1A1208;border:2px solid #333;padding:12px;margin-bottom:10px;}
+    .add-reward-form .form-row{display:flex;gap:6px;margin-bottom:8px;}
+    .add-reward-form input{flex:1;padding:8px;background:var(--stone-dark);border:2px solid var(--border);font-size:13px;font-family:inherit;color:var(--text);outline:none;}
+    .add-reward-form input:focus{border-color:var(--grass);}
+    .add-reward-form input[type=number]{width:80px;flex:none;}
+    .small-label{font-size:10px;color:var(--text-dim);margin-bottom:3px;}
 
-    /* パーティクル */
-    .particle {
-      position: fixed;
-      pointer-events: none;
-      font-size: 16px;
-      z-index: 9999;
-      animation: fly 0.7s ease-out forwards;
-    }
-    @keyframes fly {
-      0%   { transform: translate(0,0) scale(1); opacity: 1; }
-      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
-    }
+    /* ===== レアドロップ演出 ===== */
+    .rare-drop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:800;text-align:center;pointer-events:none;}
+    .rare-drop-inner{background:#1A0033;border:3px solid #AA44FF;box-shadow:0 0 20px #AA44FF,inset 0 0 10px rgba(170,68,255,.3);padding:16px 24px;animation:rareAppear .4s ease;}
+    @keyframes rareAppear{0%{transform:scale(0) rotate(-10deg);opacity:0}70%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+    .rare-drop-icon{font-size:48px;}
+    .rare-drop-name{font-size:14px;color:#DD88FF;margin-top:4px;}
+    .rare-drop-label{font-size:10px;color:#AA44FF;letter-spacing:2px;}
 
-    /* XPフロートテキスト */
-    .xp-float {
-      position: fixed;
-      pointer-events: none;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 13px;
-      color: #7EC850;
-      text-shadow: 2px 2px 0 #000;
-      z-index: 9999;
-      animation: floatUp 1s ease-out forwards;
-    }
-    @keyframes floatUp {
-      0%   { transform: translateY(0);   opacity: 1; }
-      100% { transform: translateY(-60px); opacity: 0; }
-    }
+    /* ===== エフェクト ===== */
+    @keyframes levelUp{0%{transform:translate(-50%,-50%) scale(.5);opacity:0}50%{transform:translate(-50%,-50%) scale(1.2);opacity:1}80%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-60%) scale(1);opacity:0}}
+    .effect-text{position:fixed;top:50%;left:50%;z-index:999;pointer-events:none;font-size:26px;color:#FFFF55;text-shadow:3px 3px 0 #555500;animation:levelUp 1.2s ease forwards;white-space:nowrap;font-family:inherit;}
+    @keyframes xpFloat{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-60px);opacity:0}}
+    .xp-float{position:fixed;z-index:998;pointer-events:none;font-size:15px;color:#55FF55;text-shadow:2px 2px 0 #003300;animation:xpFloat 1s ease forwards;font-family:inherit;}
+    @keyframes blockBreak{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3) rotate(15deg);opacity:.8}100%{transform:scale(0) rotate(45deg);opacity:0}}
+    .block-break{position:fixed;z-index:997;pointer-events:none;font-size:22px;animation:blockBreak .5s ease forwards;}
+
+    /* カテゴリ色 */
+    .cat-benkyou::before{background:var(--diamond)}.cat-sports::before{background:var(--emerald)}.cat-game::before{background:var(--redstone)}.cat-otetsudai::before{background:var(--gold)}.cat-shumi::before{background:#AA44FF}.cat-tomodachi::before{background:#FF88AA}.cat-challenge::before{background:#FF8800}.cat-other::before{background:var(--iron)}
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>⛏ やることリスト ⛏</h1>
 
-  <!-- タスクリスト -->
-  <div class="tasks-card">
-    <div class="tasks-title">📋 やること</div>
-    <div class="task-list" id="taskList"></div>
-    <div class="progress-bar-wrap" id="progressWrap" style="display:none">
-      <div class="progress-bar" id="progressBar"></div>
-      <div class="progress-text" id="progressText"></div>
-    </div>
-    <div class="add-task-row" style="margin-top:10px">
-      <input type="text" id="taskInput" placeholder="やること を入力..." maxlength="40"
-             onkeydown="if(event.key==='Enter') addTask()">
-      <button class="btn-add-task" onclick="addTask()">追加</button>
-    </div>
+<!-- おみくじスプラッシュ -->
+<div class="splash" id="splash">
+  <div class="splash-title">今日のおみくじ</div>
+  <div class="omikuji-box">
+    <div class="omikuji-result" id="omikuji-result">🎴</div>
+    <div class="omikuji-msg" id="omikuji-msg"></div>
+    <div class="omikuji-bonus" id="omikuji-bonus"></div>
+    <button class="splash-btn" id="splash-close">► 冒険へ出発！</button>
   </div>
-
-  <!-- プレイヤーステータス -->
-  <div class="player-card">
-    <div class="player-top">
-      <div class="player-face">🧑‍🦱</div>
-      <div class="player-info">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-          <div class="player-name" id="playerName">Steve</div>
-          <button onclick="openNameEdit()" style="font-family:inherit;font-size:8px;padding:2px 6px;background:#444;color:#aaa;border:2px solid #666;cursor:pointer">✏️</button>
-        </div>
-        <div class="player-level" id="playerLevel">Lv.1 木こり</div>
-      </div>
-      <div class="streak-row">
-        <div class="streak-fire">🔥</div>
-        <div class="streak-info">
-          <div class="streak-count" id="streakCount">0日</div>
-          <div class="streak-label">れんぞく</div>
-        </div>
-      </div>
-    </div>
-    <div class="xp-bar-wrap">
-      <div class="xp-bar" id="xpBar" style="width:0%"></div>
-      <div class="xp-text" id="xpText">XP 0 / 100</div>
-    </div>
-  </div>
-
-  <!-- ページリンクボタン -->
-  <div class="page-links">
-    <a class="page-link-btn chest-link" href="chest.html">
-      <span class="page-link-icon">🪣</span>
-      <span class="page-link-label">チェスト</span>
-      <span class="page-link-arrow">▶</span>
-    </a>
-    <a class="page-link-btn badge-link" href="badges.html">
-      <span class="page-link-icon">🏆</span>
-      <span class="page-link-label">じっせき</span>
-      <span class="page-link-arrow">▶</span>
-    </a>
-  </div>
-
-  <!-- カウントダウン -->
-  <div class="countdown-card">
-    <div class="countdown-title">🗓 カウントダウン</div>
-    <div class="event-input-row">
-      <input type="text" id="eventName" placeholder="イベント名 (例: 夏休み)" maxlength="20">
-      <input type="date" id="eventDate">
-      <button class="btn-add-event" onclick="addEvent()">追加</button>
-    </div>
-    <div class="events-list" id="eventsList"></div>
-  </div>
-
-  <footer>マイクラ やることリスト v2.0</footer>
 </div>
 
-<!-- ポップアップ -->
-<div class="popup-overlay" id="popupOverlay">
-  <div class="popup">
-    <div class="popup-icon" id="popupIcon"></div>
-    <div class="popup-title" id="popupTitle"></div>
-    <div class="popup-body" id="popupBody"></div>
-    <button class="popup-close" onclick="closePopup()">OK！</button>
+<header>
+  <div class="header-top">
+    <div class="header-row">
+      <h1>⛏ クエストボード</h1>
+      <div class="name-area">
+        <div class="player-name" id="player-name-display" onclick="openNameModal()">名前を入力</div>
+        <button class="name-edit-btn" onclick="openNameModal()">✏</button>
+      </div>
+    </div>
+  </div>
+  <div class="date-bar">
+    <div class="date-display" id="today-label"></div>
+    <div class="xp-badge" id="xp-badge">✨ XP 0</div>
+  </div>
+  <div class="xp-section">
+    <div class="xp-label"><span id="xp-level">Lv.1 見習い冒険者</span><span id="xp-pct">0%</span></div>
+    <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<!-- 今月の目標 -->
+<div class="goal-section">
+  <div class="goal-title">🎯 今月の目標（<span id="goal-month"></span>）</div>
+  <input type="text" class="goal-input" id="goal-input" placeholder="目標を入力しよう！" maxlength="40">
+  <div class="goal-progress">
+    <span id="goal-progress-txt">0/0 クリア</span>
+    <div class="goal-progress-bar"><div class="goal-progress-fill" id="goal-progress-fill" style="width:0%"></div></div>
+    <span id="goal-pct">0%</span>
+  </div>
+</div>
+
+<!-- ストリーク & ボーナス -->
+<div class="info-bar">
+  <div class="streak-box">
+    <span id="streak-fire">🔥</span>
+    <div>
+      <div class="streak-num" id="streak-num">0</div>
+      <div class="streak-label">日連続ログイン</div>
+    </div>
+  </div>
+  <div class="bonus-box" id="bonus-box" onclick="claimBonus()">
+    <span class="bonus-icon">🎁</span>
+    <div class="bonus-label">
+      <b id="bonus-text">ログインボーナス！</b><br>
+      <span id="bonus-sub">タップして受け取る</span>
+    </div>
+  </div>
+</div>
+
+<!-- 今日の一言 -->
+<div class="daily-msg" id="daily-msg"></div>
+
+<!-- カウントダウン -->
+<div class="countdown-section">
+  <div class="countdown-title">
+    <span>📅 カウントダウン</span>
+    <button class="countdown-add-btn" onclick="openCdModal()">＋ 追加</button>
+  </div>
+  <div class="countdown-list" id="countdown-list"></div>
+</div>
+
+<!-- 期限が近いクエスト -->
+<div class="urgent-section" id="urgent-section" style="display:none">
+  <div class="urgent-title">⚠ 期限が近いクエスト</div>
+  <div class="urgent-list" id="urgent-list"></div>
+</div>
+
+<!-- カウントダウン追加モーダル -->
+<div class="cd-modal" id="cd-modal">
+  <div class="cd-modal-box">
+    <div class="cd-modal-title">📅 カウントダウンを追加</div>
+    <div class="preset-grid" id="preset-grid"></div>
+    <div class="divider">── または自分で入力 ──</div>
+    <div class="form-group">
+      <label>► イベント名</label>
+      <input type="text" id="cd-name-input" placeholder="例：部活の大会" maxlength="16">
+    </div>
+    <div class="form-group">
+      <label>► アイコン</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;" id="icon-picker"></div>
+    </div>
+    <div class="form-group">
+      <label>► 日付</label>
+      <input type="date" id="cd-date-input">
+    </div>
+    <button class="btn-submit" id="cd-submit-btn">► 追加する！</button>
+  </div>
+</div>
+
+<div class="hotbar-wrap">
+  <div class="hotbar-label" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>🏆 クリア数: <span id="total-done">0</span>　アイテム: <span id="hotbar-count">0</span>/10　<span id="rare-count" style="color:#DD88FF"></span></span>
+    <span style="display:flex;gap:4px;">
+      <button onclick="openInv()" style="background:var(--panel2);color:var(--text-dim);border:2px solid var(--border);padding:2px 8px;font-size:10px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 var(--border);">🎒 バッグ</button>
+      <button onclick="openShop()" style="background:#442200;color:var(--gold);border:2px solid #884400;padding:2px 8px;font-size:10px;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 var(--border);">🛒 ショップ</button>
+    </span>
+  </div>
+  <div class="hotbar" id="hotbar"></div>
+</div>
+
+<div class="quest-type-bar">
+  <button class="quest-type-btn active" data-type="once">⚔ 1回クエスト</button>
+  <button class="quest-type-btn" data-type="daily">🔄 毎日クエスト</button>
+  <button class="quest-type-btn" data-type="weekly">📅 毎週クエスト</button>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-filter="all">すべて</div>
+  <div class="tab" data-filter="benkyou">📚 勉強</div>
+  <div class="tab" data-filter="sports">🏃 スポーツ</div>
+  <div class="tab" data-filter="game">🎮 ゲーム</div>
+  <div class="tab" data-filter="otetsudai">🏠 お手伝い</div>
+  <div class="tab" data-filter="shumi">🎨 趣味</div>
+  <div class="tab" data-filter="tomodachi">🎵 習い事</div>
+  <div class="tab" data-filter="challenge">🔥 チャレンジ</div>
+  <div class="tab" data-filter="other">📌 その他</div>
+</div>
+
+<div class="task-list" id="task-list"></div>
+<button class="fab" id="add-btn">＋</button>
+
+<!-- タスク追加モーダル -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">⚒ 新しいクエストを追加</div>
+    <div class="form-group"><label>► クエスト名</label><input type="text" id="task-input" placeholder="例：算数ドリル10ページ" maxlength="50"></div>
+    <div class="form-group">
+      <label>► クエスト種別</label>
+      <div class="type-select">
+        <button class="type-opt selected" data-qtype="once"><span class="t-icon">⚔</span>1回クエスト</button>
+        <button class="type-opt" data-qtype="daily"><span class="t-icon">🔄</span>毎日クエスト</button>
+        <button class="type-opt" data-qtype="weekly"><span class="t-icon">📅</span>毎週クエスト</button>
+      </div>
+    </div>
+    <div class="form-group"><label>► カテゴリ</label><div class="cat-grid" id="cat-grid"></div></div>
+    <div class="form-group">
+      <label>► 経験値（むずかしさ）</label>
+      <div class="xp-select" id="xp-select"></div>
+    </div>
+    <div class="form-group" id="weekday-group" style="display:none">
+      <label>► リセットする曜日</label>
+      <div class="weekday-select" id="weekday-select"></div>
+    </div>
+    <div class="form-group" id="due-group"><label>► しめ切り日</label><input type="date" id="due-input"></div>
+    <button class="btn-submit" id="submit-btn">► クエスト開始！</button>
+  </div>
+</div>
+
+<!-- アイテムコレクション -->
+<div class="inv-modal" id="inv-modal">
+  <div class="inv-panel">
+    <div class="inv-title">🎒 アイテムコレクション</div>
+    <div class="inv-stats">
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-total">0</div>
+        <div class="inv-stat-label">ノーマル</div>
+      </div>
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-rare-total" style="color:var(--gold)">0</div>
+        <div class="inv-stat-label">レア</div>
+      </div>
+      <div class="inv-stat">
+        <div class="inv-stat-num" id="inv-kinds" style="color:#DD88FF">0</div>
+        <div class="inv-stat-label">URレア</div>
+      </div>
+    </div>
+    <div class="inv-grid" id="inv-grid"></div>
+    <div class="inv-detail" id="inv-detail">
+      <div style="color:var(--text-dim);font-size:12px;width:100%;text-align:center;">アイテムをタップすると詳細が見られるよ</div>
+    </div>
+  </div>
+</div>
+
+<!-- ごほうびショップ -->
+<div class="shop-modal" id="shop-modal">
+  <div class="shop-panel">
+    <div class="shop-title">🛒 ごほうびショップ</div>
+    <div class="shop-tabs">
+      <button class="shop-tab active" data-stab="shop" onclick="switchShopTab('shop',this)">🎁 ごほうび一覧</button>
+      <button class="shop-tab" data-stab="history" onclick="switchShopTab('history',this)">📜 こうかん履歴</button>
+      <button class="shop-tab" data-stab="edit" onclick="switchShopTab('edit',this)">⚙ 設定</button>
+    </div>
+    <!-- ごほうび一覧 -->
+    <div id="stab-shop">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">アイテムをためてごほうびと交換しよう！</div>
+      <div class="reward-list" id="reward-list"></div>
+      <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:8px;">
+        ノーマル <span id="shop-normal-count" style="color:#AAAAAA">0</span>個
+        <span style="color:var(--gold)">レア</span> <span id="shop-rare-count" style="color:var(--gold)">0</span>個
+        <span style="color:#DD88FF">URレア</span> <span id="shop-ultra-count" style="color:#DD88FF">0</span>個
+      </div>
+    </div>
+    <!-- 履歴 -->
+    <div id="stab-history" style="display:none">
+      <div class="history-list" id="history-list"></div>
+    </div>
+    <!-- 設定（ごほうび追加） -->
+    <div id="stab-edit" style="display:none">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">おうちの人がごほうびを登録してね</div>
+      <div class="add-reward-form">
+        <div class="small-label">ごほうびの名前</div>
+        <div class="form-row">
+          <input type="text" id="rwd-name" placeholder="例：お小遣い100円" maxlength="20">
+        </div>
+        <div class="form-row" style="align-items:flex-end;gap:6px;">
+          <div style="flex:1">
+            <div class="small-label">アイコン</div>
+            <div id="rwd-icon-picker" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+        <div class="form-row" style="gap:6px;margin-top:6px;">
+          <div style="flex:1;text-align:center;">
+            <div class="small-label">ノーマル</div>
+            <input type="number" id="rwd-normal-cost" min="0" value="0" placeholder="0">
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div class="small-label" style="color:var(--gold)">レア</div>
+            <input type="number" id="rwd-rare-cost" min="0" value="1" placeholder="0" style="border-color:#664400;">
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div class="small-label" style="color:#DD88FF">URレア</div>
+            <input type="number" id="rwd-ultra-cost" min="0" value="0" placeholder="0" style="border-color:#440066;">
+          </div>
+        </div>
+        <button class="btn-submit" id="rwd-add-btn" style="margin-top:8px;">► ごほうびを追加</button>
+      </div>
+      <div class="reward-list" id="reward-list-edit"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 名前モーダル -->
+<div class="name-modal" id="name-modal">
+  <div class="name-modal-box">
+    <h3>⚔ プレイヤー名を入力</h3>
+    <div class="form-group"><input type="text" id="name-input" placeholder="自分の名前を入れよう" maxlength="16" style="text-align:center;font-size:18px;"></div>
+    <button class="btn-submit" id="name-save-btn">► 決定！</button>
   </div>
 </div>
 
 <script>
-// ==================== ユーティリティ ====================
-function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) ?? def; } catch { return def; } }
-function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function today() { return new Date().toISOString().slice(0,10); }
-
-// ==================== データ ====================
-let events  = load('mc_events', []);
-let tasks   = load('mc_tasks',  []);
-let player  = load('mc_player', { xp: 0, level: 1, totalDone: 0, lastLogin: '', streak: 0, items: {}, badges: [], name: 'Steve' });
-
-// ==================== ドロップアイテム ====================
-const DROPS = [
-  { id:'wood',    icon:'🪵', name:'木材',       weight:40 },
-  { id:'stone',   icon:'🪨', name:'石',         weight:30 },
-  { id:'iron',    icon:'⚙️', name:'鉄インゴット', weight:15 },
-  { id:'gold',    icon:'🥇', name:'金インゴット', weight:8  },
-  { id:'diamond', icon:'💎', name:'ダイヤ',      weight:4  },
-  { id:'emerald', icon:'💚', name:'エメラルド',  weight:2  },
-  { id:'nether',  icon:'🔮', name:'ネザースター', weight:1  },
+// ===== カウントダウン定義 =====
+const CD_PRESETS = [
+  {name:'夏休み',    icon:'🏖️', date:'2025-07-20'},
+  {name:'冬休み',    icon:'⛄', date:'2025-12-24'},
+  {name:'春休み',    icon:'🌸', date:'2026-03-25'},
+  {name:'運動会',    icon:'🏃', date:''},
+  {name:'文化祭',    icon:'🎭', date:''},
+  {name:'修学旅行',  icon:'✈️', date:''},
+  {name:'テスト',    icon:'📝', date:''},
+  {name:'誕生日',    icon:'🎂', date:''},
+  {name:'クリスマス',icon:'🎄', date:'2025-12-25'},
 ];
-function rollDrop() {
-  const total = DROPS.reduce((s,d) => s + d.weight, 0);
-  let r = Math.random() * total;
-  for (const d of DROPS) { r -= d.weight; if (r <= 0) return d; }
-  return DROPS[0];
-}
+const CD_ICONS = ['🏖️','⛄','🌸','🏃','🎭','✈️','📝','🎂','🎄','🎮','⚽','🎵','🎉','🍕','🌟','🏆','🎪','🎠'];
 
-// ==================== レベル定義 ====================
-// 称号マップ（節目レベルに設定、間は補完）
-const TITLE_MAP = {
-  1:'木こり', 5:'採掘者', 10:'冒険者', 15:'石工',
-  20:'鍛冶師', 25:'弓使い', 30:'旅人', 35:'探検家',
-  40:'ハンター', 45:'戦士', 50:'騎士',
-  55:'魔法使い', 60:'錬金術師', 65:'ドラゴンスレイヤー',
-  70:'英雄', 75:'伝説の勇者', 80:'ダイヤの騎士',
-  85:'エンダー討伐士', 90:'宇宙の覇者', 95:'神話の存在',
-  99:'★レジェンド★',
-};
-function titleForLv(lv) {
-  // 同じかそれ以下で一番近い節目を返す
-  let t = '木こり';
-  for (const k of Object.keys(TITLE_MAP).map(Number).sort((a,b)=>a-b)) {
-    if (lv >= k) t = TITLE_MAP[k];
-  }
-  return t;
-}
+let countdowns = JSON.parse(localStorage.getItem('mc_countdowns') || '[]');
+let selectedCdIcon = '🌟';
 
-// 99段階のXP閾値を生成（全体30000XP、累乗カーブ）
-const LEVELS = Array.from({length: 99}, (_, i) => {
-  const lv = i + 1;
-  const xp = lv === 1 ? 0 : Math.floor(30000 * Math.pow((lv - 1) / 98, 1.8));
-  return { lv, xp, title: titleForLv(lv) };
-});
+function saveCd() { localStorage.setItem('mc_countdowns', JSON.stringify(countdowns)); }
 
-function getLevel(xp) {
-  let cur = LEVELS[0];
-  for (const l of LEVELS) { if (xp >= l.xp) cur = l; }
-  return cur;
-}
-function nextLevelXP(xp) {
-  for (const l of LEVELS) { if (l.xp > xp) return l.xp; }
-  return null;
-}
-
-// ==================== 実績定義 ====================
-const BADGE_DEFS = [
-  { id:'first',    icon:'🌱', name:'はじめの一歩', desc:'はじめてタスクをクリア！',         check: p => p.totalDone >= 1   },
-  { id:'done10',   icon:'⭐', name:'10回クリア',   desc:'タスクを10回クリア！',             check: p => p.totalDone >= 10  },
-  { id:'done50',   icon:'🌟', name:'50回クリア',   desc:'タスクを50回クリア！',             check: p => p.totalDone >= 50  },
-  { id:'streak3',  icon:'🔥', name:'3日連続',      desc:'3日連続でアプリを開いた！',        check: p => p.streak >= 3      },
-  { id:'streak7',  icon:'🔥', name:'1週間連続',    desc:'7日連続でアプリを開いた！',        check: p => p.streak >= 7      },
-  { id:'streak30', icon:'👑', name:'1ヶ月連続',    desc:'30日連続でアプリを開いた！',       check: p => p.streak >= 30     },
-  { id:'diamond',  icon:'💎', name:'ダイヤゲット', desc:'ダイヤモンドをドロップした！',     check: p => (p.items.diamond||0) >= 1 },
-  { id:'lv10',     icon:'🏅', name:'Lv.10到達',    desc:'プレイヤーレベル10に到達！',       check: p => getLevel(p.xp).lv >= 10 },
-  { id:'lv50',     icon:'🏆', name:'Lv.50到達',    desc:'プレイヤーレベル50に到達！',       check: p => getLevel(p.xp).lv >= 50 },
-  { id:'lv99',     icon:'👑', name:'レジェンド',   desc:'Lv.99！伝説のプレイヤー！',        check: p => getLevel(p.xp).lv >= 99 },
-];
-
-// ==================== ポップアップ ====================
-let popupQueue = [];
-let popupShowing = false;
-function showPopup(icon, title, body) {
-  popupQueue.push({ icon, title, body });
-  if (!popupShowing) flushPopup();
-}
-function flushPopup() {
-  if (popupQueue.length === 0) { popupShowing = false; return; }
-  popupShowing = true;
-  const { icon, title, body } = popupQueue.shift();
-  document.getElementById('popupIcon').textContent  = icon;
-  document.getElementById('popupTitle').textContent = title;
-  document.getElementById('popupBody').innerHTML    = body;
-  document.getElementById('popupOverlay').classList.add('show');
-}
-function closePopup() {
-  document.getElementById('popupOverlay').classList.remove('show');
-  setTimeout(flushPopup, 200);
-}
-
-// ==================== ログインストリーク ====================
-function checkLogin() {
-  const t = today();
-  if (player.lastLogin === t) return; // 今日もう済んでる
-
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  const yStr = yesterday.toISOString().slice(0,10);
-
-  if (player.lastLogin === yStr) {
-    player.streak += 1;
-  } else if (player.lastLogin !== t) {
-    player.streak = 1;
-  }
-  player.lastLogin = t;
-  save('mc_player', player);
-
-  // ストリーク通知
-  if (player.streak > 1) {
-    showPopup('🔥',
-      `${player.streak}日れんぞく！`,
-      `すごい！<br>${player.streak}日れんぞくでアプリを開いたよ！<br>このちょうしでがんばろう！`
-    );
-  } else {
-    showPopup('☀️', 'おはよう！', '今日もやることをかたづけよう！');
-  }
-}
-
-// ==================== XP & レベルアップ ====================
-function addXP(amount) {
-  const prevLv = getLevel(player.xp).lv;
-  player.xp += amount;
-  const newLvData = getLevel(player.xp);
-  save('mc_player', player);
-  renderPlayer();
-  if (newLvData.lv > prevLv) {
-    showPopup('⬆️',
-      `レベルアップ！`,
-      `Lv.${newLvData.lv}「${newLvData.title}」になった！<br>さらに強くなったぞ！`
-    );
-  }
-}
-
-// ==================== アイテムドロップ ====================
-function triggerDrop() {
-  const drop = rollDrop();
-  player.items[drop.id] = (player.items[drop.id] || 0) + 1;
-  save('mc_player', player);
-  renderItems();
-  showPopup(drop.icon,
-    `${drop.name}をゲット！`,
-    `タスククリアのごほうびに<br>「${drop.name}」がドロップした！`
-  );
-}
-
-// ==================== 実績チェック ====================
-function checkBadges() {
-  let newBadge = false;
-  for (const b of BADGE_DEFS) {
-    if (!player.badges.includes(b.id) && b.check(player)) {
-      player.badges.push(b.id);
-      newBadge = true;
-      showPopup('🏆', '実績かいじょ！', `「${b.icon} ${b.name}」<br>${b.desc}`);
-    }
-  }
-  if (newBadge) save('mc_player', player);
-  renderBadges();
-}
-
-// ==================== 描画: プレイヤー ====================
-function renderPlayer() {
-  const lvData = getLevel(player.xp);
-  const next   = nextLevelXP(player.xp);
-  const prevXP = lvData.xp;
-  const pct    = next ? Math.round((player.xp - prevXP) / (next - prevXP) * 100) : 100;
-
-  document.getElementById('playerName').textContent  = player.name || 'Steve';
-  document.getElementById('playerLevel').textContent = `Lv.${lvData.lv} ${lvData.title}`;
-  document.getElementById('streakCount').textContent = `${player.streak}日`;
-  document.getElementById('xpBar').style.width = pct + '%';
-  document.getElementById('xpText').textContent = next
-    ? `XP ${player.xp - prevXP} / ${next - prevXP}`
-    : `MAX LEVEL！ XP ${player.xp}`;
-}
-
-// ==================== なまえ変更 ====================
-function openNameEdit() {
-  const name = prompt('なまえを入力してね（10文字まで）', player.name || 'Steve');
-  if (name === null) return;           // キャンセル
-  const trimmed = name.trim().slice(0, 10);
-  if (!trimmed) return;
-  player.name = trimmed;
-  save('mc_player', player);
-  renderPlayer();
-}
-
-// ==================== 描画: アイテム ====================
-function renderItems() {
-  const grid = document.getElementById('itemsGrid');
-  const entries = DROPS.filter(d => player.items[d.id] > 0);
-  if (entries.length === 0) {
-    grid.innerHTML = '<div class="chest-empty">タスクをクリアするとアイテムがドロップ！</div>';
-    return;
-  }
-  grid.innerHTML = entries.map(d => `
-    <div class="item-slot" title="${d.name}">
-      ${d.icon}
-      <span class="item-count">${player.items[d.id]}</span>
-    </div>`).join('');
-}
-
-// ==================== 描画: バッジ ====================
-function renderBadges() {
-  document.getElementById('badgesGrid').innerHTML = BADGE_DEFS.map(b => `
-    <div class="badge ${player.badges.includes(b.id) ? 'unlocked' : ''}">
-      <div class="badge-icon">${b.icon}</div>
-      <div class="badge-info">
-        <div class="badge-name">${b.name}</div>
-        <div class="badge-desc">${b.desc}</div>
-      </div>
-    </div>`).join('');
-}
-
-// ==================== カウントダウン ====================
-function daysUntil(dateStr) {
+function cdDiff(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
   const t = new Date(); t.setHours(0,0,0,0);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
   return Math.round((d - t) / 86400000);
 }
-function addEvent() {
-  const name = document.getElementById('eventName').value.trim();
-  const date = document.getElementById('eventDate').value;
-  if (!name || !date) { alert('イベント名と日付を入力してね！'); return; }
-  events.push({ id: Date.now(), name, date });
-  save('mc_events', events);
-  document.getElementById('eventName').value = '';
-  document.getElementById('eventDate').value = '';
-  renderEvents();
-}
-function deleteEvent(id) {
-  events = events.filter(e => e.id !== id);
-  save('mc_events', events);
-  renderEvents();
-}
-function renderEvents() {
-  const list = document.getElementById('eventsList');
-  if (!events.length) {
-    list.innerHTML = '<div class="empty-msg">イベントがないよ。追加してみよう！</div>';
-    return;
-  }
-  events.sort((a, b) => new Date(a.date) - new Date(b.date));
-  list.innerHTML = events.map(e => {
-    const d = daysUntil(e.date);
-    let label, cls;
-    if      (d > 0)  { label = `あと ${d} 日`; cls = ''; }
-    else if (d === 0){ label = '今日！';         cls = 'today'; }
-    else             { label = `${-d} 日前`;    cls = 'past'; }
-    return `<div class="event-item">
-      <div class="event-name">${esc(e.name)}</div>
-      <div class="event-days ${cls}">${label}</div>
-      <button class="btn-delete-event" onclick="deleteEvent(${e.id})">✕</button>
+
+function renderUrgentQuests() {
+  const urgent = tasks
+    .filter(t => (t.qtype||'once') === 'once' && t.due && !t.done)
+    .map(t => ({...t, diff: dueDiff(t.due)}))
+    .filter(t => t.diff !== null && t.diff <= 7)
+    .sort((a, b) => a.diff - b.diff)
+    .slice(0, 10);
+
+  const section = document.getElementById('urgent-section');
+  if (urgent.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  document.getElementById('urgent-list').innerHTML = urgent.map(task => {
+    const cat = catInfo(task.cat);
+    let cls, daysTxt;
+    if (task.diff < 0)       { cls = 'overdue'; daysTxt = (-task.diff) + '日すぎた'; }
+    else if (task.diff === 0) { cls = 'today';   daysTxt = '⚠ 今日まで！'; }
+    else if (task.diff === 1) { cls = 'soon';    daysTxt = 'あと1日'; }
+    else                      { cls = 'soon';    daysTxt = 'あと' + task.diff + '日'; }
+    return `<div class="urgent-card ${cls}" onclick="switchToTask(${task.id})">
+      <div class="urgent-cat">${cat.icon}</div>
+      <div class="urgent-body">
+        <div class="urgent-name">${escHtml(task.title)}</div>
+        <div class="urgent-days ${cls}">${daysTxt}</div>
+      </div>
     </div>`;
   }).join('');
 }
 
-// ==================== タスクリスト ====================
-function addTask() {
-  const input = document.getElementById('taskInput');
-  const text  = input.value.trim();
-  if (!text) return;
-  tasks.push({ id: Date.now(), text, done: false });
-  save('mc_tasks', tasks);
-  input.value = '';
+function switchToTask(id) {
+  // 1回クエストタブへ切り替えてスクロール
+  document.querySelectorAll('.quest-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'once'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.filter === 'all'));
+  currentType = 'once'; currentFilter = 'all';
   renderTasks();
-}
-function toggleTask(id) {
-  // IDを数値に統一
-  const numId = Number(id);
-  const task  = tasks.find(t => Number(t.id) === numId);
-  if (!task) return;
-
-  const wasDone = task.done;
-  // チェック状態を反転して即保存・即描画
-  tasks = tasks.map(t => Number(t.id) === numId ? { ...t, done: !t.done } : t);
-  save('mc_tasks', tasks);
-  renderTasks(); // ← まず確実に描画
-
-  // 完了になった場合のみアニメ＆報酬（エラーが起きても描画済みなので問題なし）
-  if (!wasDone) {
-    try {
-      const el   = document.getElementById('task_' + numId);
-      const rect = el ? el.getBoundingClientRect() : null;
-      const cx   = rect ? rect.left + rect.width  / 2 : window.innerWidth  / 2;
-      const cy   = rect ? rect.top  + rect.height / 2 : window.innerHeight / 2;
-      playCheckAnim(cx, cy);
-    } catch(err) { console.warn('anim error', err); }
-    try {
-      player.totalDone += 1;
-      addXP(8);
-      if (Math.random() < 0.3) triggerDrop();
-      checkBadges();
-    } catch(err) { console.warn('reward error', err); }
-  }
+  setTimeout(() => {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
 }
 
-// ==================== チェックアニメーション ====================
-function playCheckAnim(cx, cy) {
-
-  // パーティクル（マイクラっぽい絵文字）
-  const PARTS = ['✨','⭐','💫','🟩','🟨','💎'];
-  const count = 6;
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement('div');
-    el.className = 'particle';
-    el.textContent = PARTS[Math.floor(Math.random() * PARTS.length)];
-    const angle = (360 / count) * i + Math.random() * 30;
-    const dist  = 50 + Math.random() * 50;
-    const rad   = angle * Math.PI / 180;
-    el.style.setProperty('--dx', `${Math.cos(rad) * dist}px`);
-    el.style.setProperty('--dy', `${Math.sin(rad) * dist - 20}px`);
-    el.style.left = cx + 'px';
-    el.style.top  = cy + 'px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 750);
-  }
-
-  // XPフロートテキスト
-  const xpEl = document.createElement('div');
-  xpEl.className = 'xp-float';
-  xpEl.textContent = '+8 XP';
-  xpEl.style.left = (cx - 20) + 'px';
-  xpEl.style.top  = (cy - 10) + 'px';
-  document.body.appendChild(xpEl);
-  setTimeout(() => xpEl.remove(), 1050);
-}
-function deleteTask(id) {
-  tasks = tasks.filter(t => t.id !== id);
-  save('mc_tasks', tasks);
-  renderTasks();
-}
-function renderTasks() {
-  const list = document.getElementById('taskList');
-  const wrap = document.getElementById('progressWrap');
-  const bar  = document.getElementById('progressBar');
-  const text = document.getElementById('progressText');
-
-  if (!tasks.length) {
-    list.innerHTML = `
-      <div class="empty-msg" style="border:2px dashed #666;padding:16px;text-align:center;color:#bbb;font-size:9px;line-height:2">
-        ↓ 下の入力欄からやることを追加しよう！
-      </div>`;
-    wrap.style.display = 'none';
+function renderCountdowns() {
+  const list = document.getElementById('countdown-list');
+  if (countdowns.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:12px 4px;">＋ボタンからイベントを追加しよう</div>';
     return;
   }
-  list.innerHTML = tasks.map(t => `
-    <div class="task-item ${t.done ? 'done' : ''}" id="task_${t.id}" onclick="toggleTask(${t.id})">
-      <div class="task-checkbox">${t.done ? '✔' : ''}</div>
-      <div class="task-text">${esc(t.text)}</div>
-      <button class="btn-delete-task" onclick="event.stopPropagation(); deleteTask(${t.id})">🗑</button>
-    </div>`).join('');
+  const sorted = [...countdowns].sort((a,b) => {
+    const da = cdDiff(a.date), db = cdDiff(b.date);
+    if (da === null) return 1; if (db === null) return -1;
+    if (da < 0 && db >= 0) return 1; if (db < 0 && da >= 0) return -1;
+    return da - db;
+  });
+  list.innerHTML = sorted.map((cd, i) => {
+    const diff = cdDiff(cd.date);
+    let cls = 'far', daysTxt = '', unit = 'あと';
+    if (diff === null) { cls = 'past'; daysTxt = '?'; }
+    else if (diff < 0) { cls = 'past'; daysTxt = (-diff); unit = '日前'; }
+    else if (diff === 0) { cls = 'urgent'; daysTxt = '今日'; unit = ''; }
+    else if (diff <= 7) { cls = 'urgent'; daysTxt = diff; }
+    else if (diff <= 30) { cls = 'soon'; daysTxt = diff; }
+    else { cls = 'far'; daysTxt = diff; }
+    const daysClass = diff !== null && diff <= 7 && diff >= 0 ? 'urgent' : diff !== null && diff <= 30 && diff > 7 ? 'soon' : '';
+    const origIdx = countdowns.indexOf(cd);
+    return `<div class="cd-card ${cls}">
+      <button class="cd-delete" onclick="deleteCd(${origIdx})">✕</button>
+      <div class="cd-icon">${cd.icon}</div>
+      <div class="cd-days ${daysClass}">${daysTxt}</div>
+      <div class="cd-unit">${unit}${diff !== null && diff !== 0 && diff > 0 ? '日' : ''}</div>
+      <div class="cd-name">${escHtml(cd.name)}</div>
+    </div>`;
+  }).join('');
+}
 
-  const done = tasks.filter(t => t.done).length;
-  const pct  = Math.round(done / tasks.length * 100);
-  wrap.style.display = 'block';
-  bar.style.width = pct + '%';
-  text.textContent = `${done} / ${tasks.length} クリア！ (${pct}%)`;
+function deleteCd(idx) {
+  countdowns.splice(idx, 1);
+  saveCd();
+  renderCountdowns();
+}
 
-  // 全タスク完了ボーナス
-  if (done === tasks.length && tasks.length > 0) {
-    const allKey = 'mc_allBonus_' + today();
-    if (!load(allKey, false)) {
-      save(allKey, true);
-      addXP(15);
-      showPopup('🎉', 'ぜんぶクリア！',
-        '今日のタスクをぜんぶクリア！<br>ボーナスXP +30 ゲット！');
+function openCdModal() {
+  document.getElementById('cd-date-input').value = today();
+  document.getElementById('cd-name-input').value = '';
+  document.getElementById('cd-modal').classList.add('open');
+}
+
+// プリセットグリッド
+document.getElementById('preset-grid').innerHTML = CD_PRESETS.map((p,i) =>
+  `<button class="preset-btn" onclick="addPreset(${i})"><span class="p-icon">${p.icon}</span>${p.name}</button>`
+).join('');
+
+function addPreset(i) {
+  const p = CD_PRESETS[i];
+  // 常にフォームに名前・アイコンを入れて日付を入力させる
+  document.getElementById('cd-name-input').value = p.name;
+  selectedCdIcon = p.icon;
+  renderIconPicker();
+  // デフォルト日付：プリセットに日付があれば年を調整して入れる
+  if (p.date) {
+    let date = p.date;
+    const diff = cdDiff(date);
+    if (diff !== null && diff < 0) {
+      date = (parseInt(date.slice(0,4)) + 1) + date.slice(4);
     }
+    document.getElementById('cd-date-input').value = date;
+  } else {
+    document.getElementById('cd-date-input').value = today();
   }
 }
 
-// ==================== 折りたたみ ====================
-function toggleCollapse(header) {
-  header.classList.toggle('open');
-  header.nextElementSibling.classList.toggle('open');
+// アイコンピッカー
+function renderIconPicker() {
+  document.getElementById('icon-picker').innerHTML = CD_ICONS.map(ic =>
+    `<span onclick="selectIcon('${ic}')" style="font-size:22px;cursor:pointer;padding:3px;border:2px solid ${ic===selectedCdIcon?'var(--grass)':'transparent'};border-radius:4px;">${ic}</span>`
+  ).join('');
 }
+function selectIcon(ic) { selectedCdIcon = ic; renderIconPicker(); }
 
-// ==================== 毎日0時リセット ====================
-function checkDailyReset() {
+document.getElementById('cd-submit-btn').addEventListener('click', () => {
+  const name = document.getElementById('cd-name-input').value.trim();
+  const date = document.getElementById('cd-date-input').value;
+  if (!name) { document.getElementById('cd-name-input').focus(); return; }
+  if (!date) { document.getElementById('cd-date-input').focus(); return; }
+  countdowns.push({name, icon: selectedCdIcon, date});
+  saveCd();
+  renderCountdowns();
+  document.getElementById('cd-modal').classList.remove('open');
+});
+document.getElementById('cd-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('cd-modal'))
+    document.getElementById('cd-modal').classList.remove('open');
+});
+
+// ===== データ定義 =====
+const CATEGORIES=[{id:'benkyou',name:'勉強',icon:'📚'},{id:'sports',name:'スポーツ',icon:'🏃'},{id:'game',name:'ゲーム目標',icon:'🎮'},{id:'otetsudai',name:'お手伝い',icon:'🏠'},{id:'shumi',name:'趣味・工作',icon:'🎨'},{id:'tomodachi',name:'習い事',icon:'🎵'},{id:'challenge',name:'チャレンジ',icon:'🔥'},{id:'other',name:'その他',icon:'📌'}];
+// Lv.99 MAX / 1日100XP × 365日 = 36,500XP でMAX
+const MAX_XP = 36500;
+const MAX_LV = 99;
+function getLevelName(lv) {
+  if (lv >= 99) return '⭐ MAX冒険者';
+  if (lv >= 95) return 'ネザライトの覇者';
+  if (lv >= 90) return 'エンドの王';
+  if (lv >= 85) return '伝説の冒険者';
+  if (lv >= 80) return 'ドラゴンスレイヤー';
+  if (lv >= 75) return 'ドラゴンハンター';
+  if (lv >= 70) return 'エンダーの勇者';
+  if (lv >= 65) return 'エンダーの騎士';
+  if (lv >= 60) return 'エンダーの戦士';
+  if (lv >= 55) return 'ネザーの剣士';
+  if (lv >= 50) return 'ネザーの探索者';
+  if (lv >= 45) return 'エメラルドの使者';
+  if (lv >= 40) return 'ダイヤの勇者';
+  if (lv >= 35) return 'ダイヤの騎士';
+  if (lv >= 30) return 'ダイヤの戦士';
+  if (lv >= 25) return '金の騎士';
+  if (lv >= 20) return '金の勇者';
+  if (lv >= 15) return '鉄の騎士';
+  if (lv >= 10) return '鉄の剣士';
+  if (lv >= 5)  return '石の戦士';
+  return '見習い冒険者';
+}
+function xpForLevel(lv) {
+  if (lv <= 1) return 0;
+  if (lv >= MAX_LV) return MAX_XP;
+  return Math.floor(MAX_XP * Math.pow((lv - 1) / (MAX_LV - 1), 1.3));
+}
+const HOTBAR_ITEMS=['🪵','🪨','🧱','🖤','⚙️','🪙','💚','💙','🔴','💎'];
+const HOTBAR_NAMES=['木材','丸石','レンガ','石炭','鉄インゴット','金インゴット','エメラルド','ラピスラズリ','レッドストーン','ダイヤモンド'];
+
+// ===== アイテムティア =====
+const NORMAL_ITEMS=[
+  {icon:'🪵',name:'木材'},
+  {icon:'🪨',name:'丸石'},
+  {icon:'🧱',name:'レンガ'},
+  {icon:'🖤',name:'石炭'},
+  {icon:'⚙️',name:'鉄インゴット'},
+];
+const RARE_ITEMS_LIST=[
+  {icon:'🪙',name:'金インゴット'},
+  {icon:'🩶',name:'銀インゴット'},
+  {icon:'💚',name:'エメラルド'},
+  {icon:'💙',name:'ラピスラズリ'},
+  {icon:'🔴',name:'ルビー'},
+  {icon:'💜',name:'アメジスト'},
+  {icon:'✨',name:'ネザークォーツ'},
+  {icon:'🟠',name:'銅インゴット'},
+];
+const ULTRA_RARE_ITEMS=[
+  {icon:'🐉',name:'ドラゴンの卵'},
+  {icon:'🌟',name:'ネザースター'},
+  {icon:'👑',name:'ネザライト'},
+  {icon:'🌌',name:'宇宙の欠片'},
+  {icon:'⚗️',name:'古代の破片'},
+  {icon:'🦄',name:'ユニコーンの角'},
+  {icon:'🔮',name:'予言の水晶'},
+  {icon:'🪩',name:'神秘の結晶'},
+];
+const TIER_LABEL={normal:'ノーマル',rare:'レア',ultra:'ウルトラレア'};
+const TIER_COLOR={normal:'var(--stone)',rare:'var(--gold)',ultra:'#AA44FF'};
+const RARE_ITEMS=[
+  {icon:'🌑',name:'黒曜石'},
+  {icon:'💜',name:'アメジスト'},
+  {icon:'🔮',name:'エンダーパール'},
+  {icon:'✨',name:'ネザークォーツ'},
+  {icon:'🟠',name:'銅インゴット'},
+  {icon:'🌟',name:'ネザースター'},
+  {icon:'🐉',name:'ドラゴンの卵'},
+  {icon:'🪩',name:'エコーシャード'},
+  {icon:'⚗️',name:'古代の破片'},
+  {icon:'👑',name:'ネザライト'},
+];
+
+// おみくじデータ
+const OMIKUJI=[
+  {result:'🎊 大吉！',xpBonus:50,msg:'今日は何をやっても\nうまくいく最高の日！\nクエストをガンガン進もう！'},
+  {result:'✨ 中吉',xpBonus:30,msg:'コツコツ努力すれば\nきっと結果が出るよ。\n一つずつ頑張ろう！'},
+  {result:'🌟 小吉',xpBonus:20,msg:'小さなことを大切に。\n今日の積み重ねが\n明日の力になるよ！'},
+  {result:'🍀 吉',xpBonus:15,msg:'仲間と協力すると\nもっとうまくいくかも。\n笑顔を忘れずに！'},
+  {result:'☁ 末吉',xpBonus:10,msg:'今日は少しゆっくりでも\nOK。無理せず\n一歩ずつ進もう。'},
+];
+
+// 今日の一言
+const DAILY_MSGS=[
+  'どんな小さな一歩も、続けることで大きな力になる。',
+  '失敗しても大丈夫。失敗は成長のチャンスだ！',
+  '今日やれることを後回しにしない。それが強さ！',
+  '努力した分だけ、未来の自分が喜ぶよ。',
+  'どんな冒険も、最初の一歩から始まる。',
+  '楽しみながらやる人が、いちばん上手くなる！',
+  '今日の自分は昨日より少しだけ強くなっている。',
+  '夢を持つことと、行動することはセット！',
+  '休むことも大切な冒険の一部だよ。',
+  '自分を信じて！キミならできる！',
+  '小さな習慣が、大きな結果を作る。',
+  'やりたいことリストを1つ減らそう。達成感は最高！',
+];
+
+// ===== ストレージ =====
+let tasks      = JSON.parse(localStorage.getItem('mc_tasks') || '[]');
+let xp         = parseInt(localStorage.getItem('mc_xp') || '0');
+let playerName = localStorage.getItem('mc_name') || '';
+let streak     = parseInt(localStorage.getItem('mc_streak') || '0');
+// drops: [{icon,name,tier:'normal'|'rare'|'ultra',date,isNew,_used}]
+let drops = JSON.parse(localStorage.getItem('mc_drops') || '[]');
+const _oldRare = JSON.parse(localStorage.getItem('mc_rare') || '[]');
+if (_oldRare.length && !drops.length) {
+  drops = _oldRare.map(r => ({...r, tier:'rare'}));
+  localStorage.setItem('mc_drops', JSON.stringify(drops));
+}
+let currentFilter = 'all';
+let currentType   = 'once';
+
+function save() {
+  localStorage.setItem('mc_tasks', JSON.stringify(tasks));
+  localStorage.setItem('mc_xp', xp);
+  localStorage.setItem('mc_name', playerName);
+  localStorage.setItem('mc_streak', streak);
+  localStorage.setItem('mc_drops', JSON.stringify(drops));
+}
+function today() { return new Date().toISOString().slice(0,10); }
+
+// ===== 毎日リセット処理 =====
+function dailyInit() {
+  const lastOpen  = localStorage.getItem('mc_last_open') || '';
+  const lastReset = localStorage.getItem('mc_last_reset') || '';
   const t = today();
-  const lastReset = load('mc_last_reset', '');
-  if (lastReset === t) return; // 今日もうリセット済み
-  // タスクをすべて未完了に戻す
-  tasks = tasks.map(t => ({ ...t, done: false }));
-  save('mc_tasks', tasks);
-  save('mc_last_reset', t);
-}
 
-// 次の0時まで何ミリ秒か計算してタイマーをセット
-function scheduleMidnightReset() {
-  const now  = new Date();
-  const next = new Date(now);
-  next.setHours(24, 0, 0, 0); // 翌日0時
-  const ms = next - now;
-  setTimeout(() => {
-    checkDailyReset();
-    renderTasks();
-    scheduleMidnightReset(); // 次の日もセット
-  }, ms);
-}
-
-// ==================== 起動 ====================
-checkDailyReset();   // 起動時にリセットチェック
-checkLogin();
-renderPlayer();
-renderItems();
-renderBadges();
-renderEvents();
-renderTasks();
-setInterval(renderEvents, 60000);
-scheduleMidnightReset(); // 0時タイマーをセット
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
+  // ストリーク計算
+  if (lastOpen !== t) {
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    const yStr = yesterday.toISOString().slice(0,10);
+    if (lastOpen === yStr) streak++;
+    else if (lastOpen !== t) streak = lastOpen === '' ? 1 : 1;
+    localStorage.setItem('mc_last_open', t);
+    save();
   }
+
+  // 毎日クエストリセット
+  if (lastReset !== t) {
+    tasks.forEach(task => { if (task.qtype === 'daily') task.done = false; });
+    localStorage.setItem('mc_last_reset', t);
+    save();
+  }
+
+  // 毎週クエストリセット（設定曜日の当日にリセット）
+  const todayWd = new Date().getDay();
+  const weeklyResets = JSON.parse(localStorage.getItem('mc_weekly_resets') || '{}');
+  if (weeklyResets[todayWd] !== t) {
+    tasks.forEach(task => {
+      if (task.qtype === 'weekly' && task.weekday === todayWd) task.done = false;
+    });
+    weeklyResets[todayWd] = t;
+    localStorage.setItem('mc_weekly_resets', JSON.stringify(weeklyResets));
+    save();
+  }
+}
+
+// ===== おみくじ =====
+function showOmikuji() {
+  const lastOmikuji = localStorage.getItem('mc_last_omikuji') || '';
+  const t = today();
+  const seed = parseInt(t.replace(/-/g,'')) % OMIKUJI.length;
+  const o = OMIKUJI[seed];
+
+  document.getElementById('omikuji-result').textContent = o.result;
+  document.getElementById('omikuji-msg').textContent = o.msg;
+
+  if (lastOmikuji !== t) {
+    document.getElementById('omikuji-bonus').textContent = `✨ ボーナスXP +${o.xpBonus} ゲット！`;
+  } else {
+    document.getElementById('omikuji-bonus').textContent = '（今日はもう引いたよ）';
+    document.getElementById('omikuji-bonus').style.background = '#222';
+    document.getElementById('omikuji-bonus').style.borderColor = '#444';
+  }
+  document.getElementById('splash').style.display = 'flex';
+}
+
+document.getElementById('splash-close').addEventListener('click', () => {
+  const lastOmikuji = localStorage.getItem('mc_last_omikuji') || '';
+  const t = today();
+  if (lastOmikuji !== t) {
+    const seed = parseInt(t.replace(/-/g,'')) % OMIKUJI.length;
+    xp += OMIKUJI[seed].xpBonus;
+    localStorage.setItem('mc_last_omikuji', t);
+    save();
+    updateXpBar();
+    renderHotbar();
+  }
+  document.getElementById('splash').classList.add('hide');
+  setTimeout(() => document.getElementById('splash').style.display = 'none', 500);
+});
+
+// ===== ログインボーナス =====
+function renderBonusBox() {
+  const claimed = localStorage.getItem('mc_bonus_date') === today();
+  const box = document.getElementById('bonus-box');
+  const streak3 = streak >= 3, streak7 = streak >= 7;
+  const bonusXP = streak7 ? 50 : streak3 ? 30 : 20;
+  if (claimed) {
+    box.classList.add('claimed');
+    document.getElementById('bonus-text').textContent = '受け取り済み ✓';
+    document.getElementById('bonus-sub').textContent = 'また明日ね！';
+  } else {
+    box.classList.remove('claimed');
+    document.getElementById('bonus-text').textContent = `ログインボーナス +${bonusXP}XP`;
+    document.getElementById('bonus-sub').textContent = streak >= 3 ? `🔥${streak}日連続ボーナス！` : 'タップして受け取る';
+  }
+}
+
+function claimBonus() {
+  if (localStorage.getItem('mc_bonus_date') === today()) return;
+  const streak3 = streak >= 3, streak7 = streak >= 7;
+  const bonusXP = streak7 ? 50 : streak3 ? 30 : 20;
+  xp += bonusXP;
+  localStorage.setItem('mc_bonus_date', today());
+  save();
+  renderBonusBox();
+  updateXpBar();
+  renderHotbar();
+  showEffect(`🎁 +${bonusXP} XP ボーナス！`);
+}
+
+// ===== 今日の一言 =====
+function renderDailyMsg() {
+  const seed = parseInt(today().replace(/-/g,'')) % DAILY_MSGS.length;
+  document.getElementById('daily-msg').textContent = DAILY_MSGS[seed];
+}
+
+// ===== ストリーク表示 =====
+function renderStreak() {
+  document.getElementById('streak-num').textContent = streak;
+  const fires = streak >= 30 ? '🔥🔥🔥' : streak >= 7 ? '🔥🔥' : '🔥';
+  document.getElementById('streak-fire').textContent = fires;
+}
+
+// ===== ドロップ（難易度連動・3ティア） =====
+function dropRate(baseRate, taskXp) {
+  const mult = Math.min((taskXp || 30) / 30, 3);
+  return Math.min(baseRate * mult, baseRate * 3);
+}
+
+function tryDrop(taskXp) {
+  const r = Math.random();
+  // ウルトラレア: 基本5%（100XPで15%）
+  if (r < dropRate(0.05, taskXp)) {
+    addDrop(ULTRA_RARE_ITEMS, 'ultra');
+  // レア: 基本15%（100XPで45%）
+  } else if (r < dropRate(0.05, taskXp) + dropRate(0.15, taskXp)) {
+    addDrop(RARE_ITEMS_LIST, 'rare');
+  // ノーマル: 基本50%（100XPで100%）
+  } else if (r < dropRate(0.05, taskXp) + dropRate(0.15, taskXp) + dropRate(0.50, taskXp)) {
+    addDrop(NORMAL_ITEMS, 'normal');
+  }
+}
+
+function addDrop(list, tier) {
+  const item = list[Math.floor(Math.random() * list.length)];
+  const entry = {icon: item.icon, name: item.name, tier, date: today(), isNew: true};
+  drops.push(entry);
+  save();
+  showRareDrop(entry);
+  renderHotbar();
+}
+
+function showRareDrop(item) {
+  const cfg = {
+    normal: {label:'ドロップ！',     color:'#AAAAAA', bg:'#1A1A1A', border:'#555555'},
+    rare:   {label:'✦ レアドロップ！',color:'#FFD700', bg:'#221100', border:'#BB8800'},
+    ultra:  {label:'★ ウルトラレア！',color:'#DD88FF', bg:'#1A0033', border:'#AA44FF'},
+  };
+  const c = cfg[item.tier] || cfg.normal;
+  const el = document.createElement('div');
+  el.className = 'rare-drop';
+  el.innerHTML = `<div class="rare-drop-inner" style="background:${c.bg};border-color:${c.border};box-shadow:0 0 ${item.tier==='ultra'?'20px':item.tier==='rare'?'10px':'4px'} ${c.border}">
+    <div class="rare-drop-label" style="color:${c.color}">${c.label}</div>
+    <div class="rare-drop-icon">${item.icon}</div>
+    <div class="rare-drop-name" style="color:${c.color}">${item.name}</div>
+    <div style="font-size:9px;color:#666;margin-top:2px;">${TIER_LABEL[item.tier]||''}</div>
+  </div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), item.tier === 'ultra' ? 3500 : 2500);
+}
+
+// ===== XPバー =====
+function getLevelInfo(v) {
+  if (v >= MAX_XP) return {level: MAX_LV, name: getLevelName(MAX_LV), pct: 100};
+  const lv = Math.max(1, Math.min(MAX_LV - 1,
+    Math.floor((MAX_LV - 1) * Math.pow(v / MAX_XP, 1 / 1.3)) + 1));
+  const curXp  = xpForLevel(lv);
+  const nextXp = xpForLevel(lv + 1);
+  const pct = nextXp > curXp ? Math.round((v - curXp) / (nextXp - curXp) * 100) : 100;
+  return {level: lv, name: getLevelName(lv), pct: Math.max(0, Math.min(100, pct))};
+}
+
+function updateXpBar() {
+  const done = tasks.filter(t=>t.done).length;
+  document.getElementById('total-done').textContent = done;
+  const info = getLevelInfo(xp);
+  document.getElementById('xp-badge').textContent = '✨ XP '+xp;
+  document.getElementById('xp-level').textContent = (playerName?playerName+'  ':'')+' Lv.'+info.level+' '+info.name;
+  document.getElementById('xp-pct').textContent = info.pct+'%';
+  document.getElementById('xp-fill').style.width = info.pct+'%';
+}
+
+function renderHotbar() {
+  const h = document.getElementById('hotbar');
+  const f = Math.min(Math.floor(xp/50), 10);
+  const rc = dropCount('rare'), uc = dropCount('ultra');
+  document.getElementById('hotbar-count').textContent = f;
+  document.getElementById('rare-count').textContent =
+    [rc > 0 ? `🥇レア×${rc}` : '', uc > 0 ? `💜URレア×${uc}` : ''].filter(Boolean).join('　');
+  h.innerHTML = Array.from({length:10}, (_,i) =>
+    `<div class="hotbar-slot ${i<f?'filled':'empty'}">${HOTBAR_ITEMS[i]}</div>`
+  ).join('');
+}
+
+// ===== タスク =====
+function catInfo(id){return CATEGORIES.find(c=>c.id===id)||CATEGORIES[7];}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function dueDiff(due){if(!due)return null;const d=new Date(due+'T00:00:00');const t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+function countdownLabel(due){const diff=dueDiff(due);if(diff===null)return null;if(diff<0)return{text:(-diff)+'日オーバー',cls:'overdue'};if(diff===0)return{text:'⚠ 今日まで！',cls:'today'};if(diff===1)return{text:'⏰ あと1日',cls:'soon'};if(diff<=3)return{text:'⏰ あと'+diff+'日',cls:'soon'};return{text:'📅 あと'+diff+'日',cls:'normal'};}
+
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  let filtered = tasks.filter(t=>(t.qtype||'once')===currentType||( currentType==='weekly'&&t.qtype==='weekly'));
+  if(currentFilter!=='all') filtered=filtered.filter(t=>t.cat===currentFilter);
+  const sorted=[...filtered].sort((a,b)=>{
+    if(a.done!==b.done)return a.done?1:-1;
+    if(a.due&&b.due)return a.due.localeCompare(b.due);
+    if(a.due)return -1;if(b.due)return 1;
+    return b.id-a.id;
+  });
+  if(sorted.length===0){
+    const _icon={daily:'🔄',weekly:'📅'}[currentType]||'🗺️';
+    const _msg={daily:'まだ毎日クエストがないよ！<br>＋ボタンから追加しよう',weekly:'まだ毎週クエストがないよ！<br>＋ボタンから追加しよう'}[currentType]||'クエストがないよ！<br>＋ボタンから追加しよう';
+    list.innerHTML='<div class="empty-state"><div class="icon">'+_icon+'</div><p>'+_msg+'</p></div>';
+    return;
+  }
+  list.innerHTML=sorted.map(task=>{
+    const cat=catInfo(task.cat);const cd=countdownLabel(task.due);const isD=(task.qtype||'once')==='daily';const isW=task.qtype==='weekly';const wdName=isW&&task.weekday!=null?WEEKDAY_NAMES[task.weekday]+'曜':'';
+    return'<div class="task-card cat-'+task.cat+(task.done?' done':'')+'">'+( isD?'<div class="daily-badge">🔄 毎日</div>':isW?'<div class="weekly-badge">📅 毎週'+wdName+'</div>':'')+'<div class="cat-icon">'+cat.icon+'</div><div class="task-body"><div class="task-title">'+escHtml(task.title)+'</div><div class="task-meta"><span class="cat-tag">'+cat.name+'</span>'+(cd?'<span class="countdown '+cd.cls+'">'+cd.text+'</span>':'')+'<span class="xp-tag">+' +(task.xp||30)+ 'XP</span></div></div><button class="check-btn'+(task.done?' done':'')+'" onclick="toggleTask('+task.id+')">'+(task.done?'✓':'')+'</button><button class="delete-btn" onclick="deleteTask('+task.id+')">✕</button></div>';
+  }).join('');
+  updateXpBar();
+  renderUrgentQuests();
+  if (typeof updateGoalProgress === 'function') updateGoalProgress();
+}
+
+function toggleTask(id) {
+  const task=tasks.find(t=>t.id===id);if(!task)return;
+  task.done=!task.done;
+  if(task.done){
+    const gain=task.xp||30;
+    xp+=gain;showXpFloat(gain);showBlockBreak();
+    const info=getLevelInfo(xp);const prev=getLevelInfo(xp-gain);
+    if(info.level>prev.level)showEffect('⬆ LEVEL UP! Lv.'+info.level);
+    else showEffect('✓ クエストクリア！');
+    tryDrop(task.xp||30);
+  }else{xp=Math.max(0,xp-(task.xp||30));}
+  save();renderTasks();renderHotbar();
+}
+
+function deleteTask(id){if(!confirm('このクエストを消す？'))return;tasks=tasks.filter(t=>t.id!==id);save();renderTasks();}
+
+function showEffect(t){const el=document.createElement('div');el.className='effect-text';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1300);}
+function showXpFloat(a){const el=document.createElement('div');el.className='xp-float';el.textContent='+'+a+' XP';el.style.left=(40+Math.random()*40)+'%';el.style.top='60%';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
+function showBlockBreak(){const b=['💎','⭐','🌟','🏆','🎯'];for(let i=0;i<5;i++){const el=document.createElement('div');el.className='block-break';el.textContent=b[Math.floor(Math.random()*b.length)];el.style.left=(30+Math.random()*40)+'%';el.style.top=(40+Math.random()*20)+'%';el.style.animationDelay=(i*.08)+'s';document.body.appendChild(el);setTimeout(()=>el.remove(),700);}}
+
+function renderPlayerName(){const el=document.getElementById('player-name-display');if(playerName){el.textContent='冒険者「'+playerName+'」';el.classList.remove('placeholder');}else{el.textContent='名前を入力';el.classList.add('placeholder');}}
+
+// ===== アイテムコレクション =====
+function openInv() {
+  renderInv();
+  document.getElementById('inv-modal').classList.add('open');
+}
+document.getElementById('inv-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('inv-modal'))
+    document.getElementById('inv-modal').classList.remove('open');
+});
+
+function renderInv() {
+  // ノーマル（XPで獲得）
+  const normalCount = Math.min(Math.floor(xp / 50), 10);
+  const xpItems = HOTBAR_ITEMS.slice(0, normalCount).map((icon, i) => ({
+    icon, name: HOTBAR_NAMES[i], tier: 'xp', count: 1, dates: [], isNew: false
+  }));
+
+  // ドロップアイテム（ティア別集計）
+  const summary = {};
+  drops.forEach(d => {
+    const key = d.tier + '_' + d.name;
+    if (!summary[key]) summary[key] = {icon:d.icon, name:d.name, tier:d.tier, count:0, dates:[], isNew:false, _used:0};
+    summary[key].count++;
+    if (d._used) summary[key]._used++;
+    if (d.date) summary[key].dates.push(d.date);
+    if (d.isNew) summary[key].isNew = true;
+  });
+
+  // ティア順でソート
+  const tierOrder = {normal:0, rare:1, ultra:2};
+  const dropList = Object.values(summary).sort((a,b) => (tierOrder[b.tier]||0) - (tierOrder[a.tier]||0));
+
+  const allItems = [...xpItems, ...dropList];
+
+  // 統計
+  document.getElementById('inv-total').textContent      = normalCount + drops.filter(d=>d.tier==='normal').length;
+  document.getElementById('inv-rare-total').textContent = drops.filter(d=>d.tier==='rare').length;
+  document.getElementById('inv-kinds').textContent      = drops.filter(d=>d.tier==='ultra').length;
+
+  if (allItems.length === 0) {
+    document.getElementById('inv-grid').innerHTML = '<div class="inv-empty" style="grid-column:span 4">まだアイテムがないよ！<br>クエストをクリアして<br>アイテムをゲットしよう</div>';
+    document.getElementById('inv-detail').innerHTML = '<div style="color:var(--text-dim);font-size:12px;width:100%;text-align:center;">アイテムをタップすると詳細が見られるよ</div>';
+    return;
+  }
+
+  const slotClass = {xp:'', normal:'', rare:'inv-slot-rare', ultra:'inv-slot-ultra'};
+  const tierBadge = {xp:'', normal:'', rare:'<div class="inv-slot-tier rare">レア</div>', ultra:'<div class="inv-slot-tier ultra">URレア</div>'};
+
+  document.getElementById('inv-grid').innerHTML = allItems.map((item, i) => `
+    <div class="inv-slot ${slotClass[item.tier]||''}" onclick="showItemDetail(${i})">
+      ${item.isNew ? '<div class="inv-slot-new">NEW</div>' : ''}
+      ${tierBadge[item.tier]||''}
+      <div class="inv-slot-icon">${item.icon}</div>
+      <div class="inv-slot-name">${item.name}</div>
+      ${item.count > 1 ? `<div class="inv-slot-count">×${item.count}</div>` : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('inv-detail').innerHTML = '<div style="color:var(--text-dim);font-size:12px;width:100%;text-align:center;">アイテムをタップすると詳細が見られるよ</div>';
+  window._invItems = allItems;
+}
+
+function showItemDetail(i) {
+  const item = window._invItems[i];
+  if (!item) return;
+
+  drops.forEach(d => { if (d.name === item.name && d.tier === item.tier) d.isNew = false; });
+  save();
+
+  document.querySelectorAll('.inv-slot').forEach((el, idx) => el.classList.toggle('selected', idx === i));
+
+  const tierCfg = {
+    xp:     {label:'ノーマル',    color:'var(--text-dim)'},
+    normal: {label:'ノーマル',    color:'var(--text-dim)'},
+    rare:   {label:'✦ レア',          color:'var(--gold)'},
+    ultra:  {label:'★ ウルトラレア', color:'#DD88FF'},
+  };
+  const tc = tierCfg[item.tier] || tierCfg.xp;
+
+  const dateHtml = item.dates && item.dates.length > 0
+    ? `<div class="inv-detail-date">最初に入手: ${item.dates[0]}　最新: ${item.dates[item.dates.length-1]}</div>`
+    : '<div class="inv-detail-date">XP達成で獲得</div>';
+
+  const available = item.tier === 'xp'
+    ? Math.min(Math.floor(xp / 50), 10)
+    : drops.filter(d => d.name === item.name && d.tier === item.tier && !d._used).length;
+
+  document.getElementById('inv-detail').innerHTML = `
+    <div class="inv-detail-icon">${item.icon}</div>
+    <div class="inv-detail-body">
+      <div class="inv-detail-name">${item.name}</div>
+      <span class="inv-detail-rarity" style="color:${tc.color};border-color:${tc.color};background:transparent">${tc.label}</span>
+      <div class="inv-detail-count">所持数: <span style="color:#FFFF55">${item.count}個</span></div>
+      ${dateHtml}
+    </div>
+  `;
+}
+
+// ===== ごほうびショップ =====
+let rewards  = JSON.parse(localStorage.getItem('mc_rewards')  || '[]');
+let history  = JSON.parse(localStorage.getItem('mc_history')  || '[]');
+let rwdIcon  = '🎁';
+const RWD_ICONS = ['🎁','💰','🍕','🍦','🎮','🎬','🛍️','🎠','🌟','🎪','🎯','🎧'];
+
+function saveShop() {
+  localStorage.setItem('mc_rewards', JSON.stringify(rewards));
+  localStorage.setItem('mc_history', JSON.stringify(history));
+}
+
+function openShop() {
+  switchShopTab('shop', document.querySelector('.shop-tab'));
+  renderShop();
+  document.getElementById('shop-modal').classList.add('open');
+}
+document.getElementById('shop-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('shop-modal'))
+    document.getElementById('shop-modal').classList.remove('open');
+});
+
+function switchShopTab(tab, el) {
+  ['shop','history','edit'].forEach(t => {
+    document.getElementById('stab-'+t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.shop-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (tab === 'shop')    renderShopList();
+  if (tab === 'history') renderHistory();
+  if (tab === 'edit')    renderEditList();
+}
+
+function normalItemCount()  { return Math.min(Math.floor(xp / 50), 10); }
+function dropCount(tier)    { return drops.filter(d => d.tier === tier && !d._used).length; }
+function dropCountAll()     { return {normal:dropCount('normal'), rare:dropCount('rare'), ultra:dropCount('ultra'), xp:normalItemCount()}; }
+
+function renderShop() {
+  const c = dropCountAll();
+  document.getElementById('shop-normal-count').textContent = c.xp + c.normal;
+  document.getElementById('shop-rare-count').textContent   = c.rare;
+  document.getElementById('shop-ultra-count').textContent  = c.ultra;
+  renderShopList();
+}
+
+function renderShopList() {
+  const el = document.getElementById('reward-list');
+  if (rewards.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px;">ごほうびがまだ登録されていないよ<br>「⚙ 設定」タブから追加してね</div>';
+    return;
+  }
+  const c = dropCountAll();
+  el.innerHTML = rewards.map((r, i) => {
+    const canExchange = (c.xp+c.normal) >= (r.normalCost||0)
+                     && c.rare          >= (r.rareCost||0)
+                     && c.ultra         >= (r.ultraCost||0);
+    const costParts = [
+      r.normalCost > 0 ? `ノーマル×${r.normalCost}` : '',
+      r.rareCost   > 0 ? `<span style="color:var(--gold)">レア×${r.rareCost}</span>` : '',
+      r.ultraCost  > 0 ? `<span style="color:#DD88FF">URレア×${r.ultraCost}</span>` : '',
+    ].filter(Boolean).join(' + ') || '無料';
+    return `<div class="reward-card">
+      <div class="reward-icon-big">${r.icon}</div>
+      <div class="reward-body">
+        <div class="reward-name">${escHtml(r.name)}</div>
+        <div class="reward-cost">必要: ${costParts}</div>
+      </div>
+      <button class="reward-exchange-btn" onclick="exchange(${i})" ${canExchange?'':'disabled'}>
+        ${canExchange ? '交換する' : 'アイテム不足'}
+      </button>
+    </div>`;
+  }).join('');
+  document.getElementById('shop-normal-count').textContent = c.xp + c.normal;
+  document.getElementById('shop-rare-count').textContent   = c.rare;
+  document.getElementById('shop-ultra-count').textContent  = c.ultra;
+}
+
+function exchange(i) {
+  const r = rewards[i];
+  const c = dropCountAll();
+  if ((c.xp+c.normal) < (r.normalCost||0) || c.rare < (r.rareCost||0) || c.ultra < (r.ultraCost||0)) return;
+  if (!confirm(`「${r.name}」と交換する？\nノーマル×${r.normalCost||0}　レア×${r.rareCost||0}　URレア×${r.ultraCost||0}\nが減ります`)) return;
+
+  // ウルトラレア消費
+  let uLeft = r.ultraCost || 0;
+  for (let j = drops.length-1; j >= 0 && uLeft > 0; j--) {
+    if (drops[j].tier === 'ultra' && !drops[j]._used) { drops[j]._used = true; uLeft--; }
+  }
+  // レア消費
+  let rLeft = r.rareCost || 0;
+  for (let j = drops.length-1; j >= 0 && rLeft > 0; j--) {
+    if (drops[j].tier === 'rare' && !drops[j]._used) { drops[j]._used = true; rLeft--; }
+  }
+  // ノーマル消費（dropを優先、次にXP）
+  let nLeft = r.normalCost || 0;
+  for (let j = drops.length-1; j >= 0 && nLeft > 0; j--) {
+    if (drops[j].tier === 'normal' && !drops[j]._used) { drops[j]._used = true; nLeft--; }
+  }
+  xp = Math.max(0, xp - nLeft * 50);
+
+  // 履歴に追加
+  history.unshift({
+    icon: r.icon, name: r.name, date: today(),
+    normalCost: r.normalCost||0, rareCost: r.rareCost||0, ultraCost: r.ultraCost||0,
+    status: 'pending'
+  });
+
+  save(); saveShop();
+  renderShop(); renderHotbar(); updateXpBar();
+  showEffect('🎁 交換申請したよ！');
+  switchShopTab('history', null);
+  document.querySelectorAll('.shop-tab').forEach((b,i) => b.classList.toggle('active', i===1));
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (history.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:12px;">まだ交換履歴がないよ</div>';
+    return;
+  }
+  el.innerHTML = history.map((h, i) => `
+    <div class="history-item">
+      <span style="font-size:20px">${h.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--text)">${escHtml(h.name)}</div>
+        <div style="font-size:10px;color:var(--text-dim)">${h.date}　ノーマル×${h.normalCost||0} レア×${h.rareCost||0} URレア×${h.ultraCost||0}</div>
+      </div>
+      <span class="history-status ${h.status}">${h.status==='done' ? '✓ もらった' : '⏳ 申請中'}</span>
+      ${h.status==='pending' ? `<button onclick="markDone(${i})" style="background:var(--grass);color:#FFFF55;border:2px solid var(--border);padding:3px 7px;font-size:10px;font-family:inherit;cursor:pointer;margin-left:4px;">渡した</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function markDone(i) {
+  history[i].status = 'done';
+  saveShop(); renderHistory();
+}
+
+function renderEditList() {
+  renderRwdIconPicker();
+  const el = document.getElementById('reward-list-edit');
+  if (rewards.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">登録済みのごほうび</div>' +
+    rewards.map((r, i) => {
+      const costStr = [r.normalCost>0?`ノーマル×${r.normalCost}`:'', r.rareCost>0?`レア×${r.rareCost}`:'', r.ultraCost>0?`URレア×${r.ultraCost}`:''].filter(Boolean).join(' + ') || '無料';
+      return `<div class="reward-card">
+        <div class="reward-icon-big">${r.icon}</div>
+        <div class="reward-body">
+          <div class="reward-name">${escHtml(r.name)}</div>
+          <div class="reward-cost">${costStr}</div>
+        </div>
+        <button class="reward-delete-btn" onclick="deleteReward(${i})">✕</button>
+      </div>`;
+    }).join('');
+}
+
+function renderRwdIconPicker() {
+  document.getElementById('rwd-icon-picker').innerHTML = RWD_ICONS.map(ic =>
+    `<span onclick="selectRwdIcon('${ic}')" style="font-size:20px;cursor:pointer;padding:2px;border:2px solid ${ic===rwdIcon?'var(--grass)':'transparent'}">${ic}</span>`
+  ).join('');
+}
+function selectRwdIcon(ic) { rwdIcon = ic; renderRwdIconPicker(); }
+
+document.getElementById('rwd-add-btn').addEventListener('click', () => {
+  const name = document.getElementById('rwd-name').value.trim();
+  if (!name) { document.getElementById('rwd-name').focus(); return; }
+  const normalCost = parseInt(document.getElementById('rwd-normal-cost').value) || 0;
+  const rareCost   = parseInt(document.getElementById('rwd-rare-cost').value)   || 0;
+  const ultraCost  = parseInt(document.getElementById('rwd-ultra-cost').value)  || 0;
+  rewards.push({icon: rwdIcon, name, normalCost, rareCost, ultraCost});
+  saveShop();
+  document.getElementById('rwd-name').value = '';
+  renderEditList();
+});
+
+function deleteReward(i) {
+  if (!confirm('このごほうびを削除する？')) return;
+  rewards.splice(i, 1); saveShop(); renderEditList();
+}
+
+// バッグの「使う」ボタン
+function useItem(itemName, tier) {
+  if (!confirm(`「${itemName}」を1個使う？`)) return;
+  if (tier === 'xp') {
+    xp = Math.max(0, xp - 50);
+  } else {
+    const idx = drops.findIndex(d => d.name === itemName && d.tier === tier && !d._used);
+    if (idx < 0) { alert('使えるアイテムがないよ'); return; }
+    drops[idx]._used = true;
+  }
+  save(); renderHotbar(); updateXpBar(); renderInv();
+  showEffect('✓ アイテムを使った！');
+}
+
+// ===== イベント =====
+function openNameModal(){document.getElementById('name-input').value=playerName;document.getElementById('name-modal').classList.add('open');setTimeout(()=>document.getElementById('name-input').focus(),100);}
+document.getElementById('name-save-btn').addEventListener('click',()=>{playerName=document.getElementById('name-input').value.trim();save();renderPlayerName();updateXpBar();document.getElementById('name-modal').classList.remove('open');});
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('name-save-btn').click();});
+document.getElementById('name-modal').addEventListener('click',e=>{if(e.target===document.getElementById('name-modal'))document.getElementById('name-modal').classList.remove('open');});
+document.querySelector('.quest-type-bar').addEventListener('click',e=>{const btn=e.target.closest('.quest-type-btn');if(!btn)return;document.querySelectorAll('.quest-type-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentType=btn.dataset.type;renderTasks();});
+document.getElementById('tabs').addEventListener('click',e=>{const tab=e.target.closest('.tab');if(!tab)return;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');currentFilter=tab.dataset.filter;renderTasks();});
+
+let selectedQtype='once';
+let selectedWeekday = 1; // 月曜デフォルト
+const WEEKDAY_NAMES = ['日','月','火','水','木','金','土'];
+
+function renderWeekdaySelect() {
+  document.getElementById('weekday-select').innerHTML = WEEKDAY_NAMES.map((d,i) =>
+    `<button class="wd-btn${i===selectedWeekday?' selected':''}" data-wd="${i}">${d}</button>`
+  ).join('');
+}
+document.getElementById('weekday-select').addEventListener('click', e => {
+  const btn = e.target.closest('.wd-btn');
+  if (!btn) return;
+  selectedWeekday = parseInt(btn.dataset.wd);
+  renderWeekdaySelect();
+});
+
+// ===== XP選択 =====
+const XP_PRESETS=[
+  {stars:'⭐',label:'かんたん',xp:10},
+  {stars:'⭐⭐',label:'ふつう',xp:20},
+  {stars:'⭐⭐⭐',label:'むずかしい',xp:30},
+  {stars:'🌟',label:'ハード',xp:50},
+  {stars:'💎',label:'ボス級',xp:'custom'},
+];
+let selectedXp = 30;
+let customXp   = 100;
+
+function renderXpSelect() {
+  document.getElementById('xp-select').innerHTML = XP_PRESETS.map(p => {
+    const isCustom   = p.xp === 'custom';
+    const isSelected = isCustom ? (selectedXp === 'custom') : (selectedXp === p.xp);
+    if (isCustom) {
+      return `<div class="xp-opt${isSelected?' selected':''}" data-xp="custom" style="min-width:72px;">
+        <span class="xo-star">${p.stars}</span>
+        <input id="custom-xp-input" type="number" min="1" max="9999"
+          value="${customXp}"
+          onclick="event.stopPropagation();selectCustomXp();"
+          oninput="customXp=Math.max(1,parseInt(this.value)||1);selectedXp='custom';"
+          style="width:54px;background:#221100;border:2px solid ${isSelected?'var(--gold)':'var(--border)'};color:var(--gold);font-size:13px;font-family:inherit;text-align:center;padding:2px;outline:none;">
+        <span style="font-size:9px;">XP</span><br>${p.label}
+      </div>`;
+    }
+    return `<button class="xp-opt${isSelected?' selected':''}" data-xp="${p.xp}">
+      <span class="xo-star">${p.stars}</span>
+      <span class="xo-val">${p.xp}XP</span>
+      ${p.label}
+    </button>`;
+  }).join('');
+}
+
+function selectCustomXp() {
+  selectedXp = 'custom';
+  renderXpSelect();
+  setTimeout(() => document.getElementById('custom-xp-input')?.focus(), 50);
+}
+
+document.getElementById('xp-select').addEventListener('click', e => {
+  const btn = e.target.closest('.xp-opt');
+  if (!btn) return;
+  const val = btn.dataset.xp;
+  if (val === 'custom') { selectCustomXp(); return; }
+  selectedXp = parseInt(val);
+  renderXpSelect();
+});
+
+function getSelectedXp() {
+  return selectedXp === 'custom' ? (customXp || 100) : selectedXp;
+}
+document.querySelector('.type-select').addEventListener('click',e=>{const btn=e.target.closest('.type-opt');if(!btn)return;selectedQtype=btn.dataset.qtype;document.querySelectorAll('.type-opt').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');document.getElementById('due-group').style.display=(selectedQtype==='daily'||selectedQtype==='weekly')?'none':'';document.getElementById('weekday-group').style.display=selectedQtype==='weekly'?'':'none';});
+
+const catGrid=document.getElementById('cat-grid');
+let selectedCat='other';
+catGrid.innerHTML=CATEGORIES.map(c=>'<div class="cat-btn'+(c.id===selectedCat?' selected':'')+'" data-id="'+c.id+'"><span class="icon">'+c.icon+'</span>'+c.name+'</div>').join('');
+catGrid.addEventListener('click',e=>{const btn=e.target.closest('.cat-btn');if(!btn)return;selectedCat=btn.dataset.id;catGrid.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');});
+
+document.getElementById('add-btn').addEventListener('click',()=>{document.getElementById('modal').classList.add('open');document.getElementById('task-input').focus();document.getElementById('due-input').value=today();renderXpSelect();renderWeekdaySelect();});
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');});
+document.getElementById('submit-btn').addEventListener('click',()=>{const title=document.getElementById('task-input').value.trim();if(!title){document.getElementById('task-input').focus();return;}tasks.push({id:Date.now(),title,cat:selectedCat,qtype:selectedQtype,weekday:selectedQtype==='weekly'?selectedWeekday:null,due:(selectedQtype==='daily'||selectedQtype==='weekly')?'':document.getElementById('due-input').value,xp:getSelectedXp(),done:false});save();renderTasks();renderHotbar();document.getElementById('task-input').value='';document.getElementById('modal').classList.remove('open');});
+document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('submit-btn').click();});
+
+// ===== 日付 =====
+const now=new Date(),days=['日','月','火','水','木','金','土'];
+document.getElementById('today-label').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日（'+days[now.getDay()]+'）';
+
+// ===== 今月の目標 =====
+function initGoal() {
+  const m = new Date();
+  document.getElementById('goal-month').textContent = (m.getMonth()+1) + '月';
+  const goalKey = 'mc_goal_' + m.getFullYear() + '_' + (m.getMonth()+1);
+  document.getElementById('goal-input').value = localStorage.getItem(goalKey) || '';
+  document.getElementById('goal-input').addEventListener('input', e => {
+    localStorage.setItem(goalKey, e.target.value);
+  });
+  updateGoalProgress();
+}
+function updateGoalProgress() {
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length;
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('goal-progress-txt').textContent = done + '/' + total + ' クリア';
+  document.getElementById('goal-progress-fill').style.width = pct + '%';
+  document.getElementById('goal-pct').textContent = pct + '%';
+}
+
+// ===== 初期化 =====
+dailyInit();
+initGoal();
+renderPlayerName();
+renderStreak();
+renderBonusBox();
+renderDailyMsg();
+renderIconPicker();
+renderXpSelect();
+renderWeekdaySelect();
+renderCountdowns();
+renderTasks();
+renderHotbar();
+updateXpBar();
+renderUrgentQuests();
+showOmikuji();
 </script>
 </body>
 </html>
